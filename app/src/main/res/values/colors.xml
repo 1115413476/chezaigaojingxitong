@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="c1">#FF4081</color>
+    <color name="c2">#FF4081</color>
+    <color name="c3">#FF4081</color>
+    <color name="c4">#FF4081</color>
+    <color name="c5">#FF4081</color>
+
+
+    <color name="black">#000</color>
+    <color name="darkRed">#702216</color>
+    <color name="lightGray">#323232</color>
+    <color name="deepGray">#8B8B8B</color>
+    <color name="white">#fff</color>
+    <color name="red">#f00</color>
+    <color name="ocbg">#237EAD</color>
+    <color name="alert_msg_color_v3">#fdb211</color>
+    <color name="alert_msg_color_v2">#fd8611</color>
+    <color name="alert_msg_level1">#cf3E18</color>
+</resources>

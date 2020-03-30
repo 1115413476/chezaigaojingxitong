@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_horizontal_margin">20dp</dimen>
+    <dimen name="activity_vertical_margin">30dp</dimen>
+
+
+    <!-- h1用于上导航文字 -->
+    <dimen name="h0">30sp</dimen>
+    <!-- h1用于上导航文字 -->
+    <dimen name="h1">20sp</dimen>
+    <!-- h2用于按钮文字 -->
+    <dimen name="h2">18sp</dimen>
+    <!-- h3主要用于栏目标题 -->
+    <dimen name="h3">15sp</dimen>
+    <!-- h4主要用于副标题 -->
+    <dimen name="h4">14sp</dimen>
+    <!-- h5主要用于正文-->
+    <dimen name="h5">13sp</dimen>
+    <!-- h6用于提示信息 -->
+    <dimen name="h6">12sp</dimen>
+    <!-- h7用于提示小信息 -->
+    <dimen name="h7">11sp</dimen>
+    <!-- h7用于提示小信息 -->
+    <dimen name="h8">10sp</dimen>
+    <!-- h7用于提示小信息 -->
+    <dimen name="h9">9sp</dimen>
+    <!-- h7用于提示小信息 -->
+    <dimen name="h10">8sp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+</resources>

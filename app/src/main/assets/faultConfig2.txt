@@ -1,0 +1,142 @@
+[
+{
+	"EventName": "道路打滑",
+	"EventIcon": "daoludahua.png",
+	"Topic": "vpub/perception/pavementAnomaly",
+	"Content": [{
+		"vehicleId": "#VID#",
+		"eventType": 6,
+		"geoInfo": {
+			"vendor": "图商代码",
+			"position": {
+				"longitude": "#LO#",
+				"latitude": "#LA#",
+				"altitude": 20.973882,
+				"pdop_accuracy": 99.8,
+				"hdop_accuracy": 98.3,
+				"vdop_accuracy": 0.9
+			},
+			"roadId": "#RID#",
+			"laneId": "#LID#",
+			"affectedLanes": [{
+				"positiveLanes": 343,
+				"negativeLanes": 213
+			}]
+		},
+		"dangerLevel": 1,
+		"timestamp": "#T#"
+	}]
+},
+{
+	"EventName": "道路施工",
+	"EventIcon": "daolushigong.png",
+	"Topic": "vpub/perception/pavementAnomaly",
+	"Content": [{
+		"vehicleId": "#VID#",
+		"eventType": 10,
+		"geoInfo": {
+			"vendor": "图商代码",
+			"position": {
+				"longitude": "#LO#",
+				"latitude": "#LA#",
+				"altitude": 20.973882,
+				"pdop_accuracy": 99.8,
+				"hdop_accuracy": 98.3,
+				"vdop_accuracy": 0.9
+			},
+			"roadId": "#RID#",
+			"laneId": "#LID#",
+			"affectedLanes": [{
+				"positiveLanes": 343,
+				"negativeLanes": 213
+			}]
+		},
+		"dangerLevel": 1,
+		"timestamp": "#T#"
+	}]
+},
+{
+	"EventName": "道路障碍物",
+	"EventIcon": "zhangaiwu.png",
+	"Topic": "vpub/perception/obstacle",
+	"Content": [{
+		"vehicleId": "#VID#",
+		"eventType": 10,
+		"geoInfo": {
+			"vendor": "图商代码",
+			"position": {
+				"longitude": "#LO#",
+				"latitude": "#LA#",
+				"altitude": 20.973882,
+				"pdop_accuracy": 99.8,
+				"hdop_accuracy": 98.3,
+				"vdop_accuracy": 0.9
+			},
+			"roadId": "#RID#",
+			"laneId": "#LID#",
+			"affectedLanes": [{
+				"positiveLanes": 343,
+				"negativeLanes": 213
+			}]
+		},
+		"dangerLevel": 1,
+		"timestamp": "#T#"
+	}]
+},
+{
+	"EventName": "危险车辆",
+	"EventIcon": "weixiancheliang.png",
+	"Topic": "vpub/perception/obstacle",
+	"Content": [{
+		"vehicleId": "#VID#",
+		"eventType": 10,
+		"geoInfo": {
+			"vendor": "图商代码",
+			"position": {
+				"longitude": "#LO#",
+				"latitude": "#LA#",
+				"altitude": 20.973882,
+				"pdop_accuracy": 99.8,
+				"hdop_accuracy": 98.3,
+				"vdop_accuracy": 0.9
+			},
+			"roadId": "#RID#",
+			"laneId": "#LID#",
+			"affectedLanes": [{
+				"positiveLanes": 343,
+				"negativeLanes": 213
+			}]
+		},
+		"dangerLevel": 1,
+		"timestamp": "#T#"
+	}]
+},
+{
+	"EventName": "公交专用道",
+	"EventIcon": "test.png",
+	"Topic": "vpub/perception/obstacle",
+	"Content": [{
+		"vehicleId": "#VID#",
+		"eventType": 10,
+		"geoInfo": {
+			"vendor": "图商代码",
+			"position": {
+				"longitude": "#LO#",
+				"latitude": "#LA#",
+				"altitude": 20.973882,
+				"pdop_accuracy": 99.8,
+				"hdop_accuracy": 98.3,
+				"vdop_accuracy": 0.9
+			},
+			"roadId": "#RID#",
+			"laneId": "#LID#",
+			"affectedLanes": [{
+				"positiveLanes": 343,
+				"negativeLanes": 213
+			}]
+		},
+		"dangerLevel": 1,
+		"timestamp": "#T#"
+	}]
+}
+]

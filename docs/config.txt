@@ -1,0 +1,11 @@
+id=1name=模拟故障1&icon=fault.png
+id=2&name=模拟故障2&icon=fault.png
+id=3&name=模拟故障3&icon=fault.png
+id=4&name=模拟故障4&icon=fault.png
+id=5&name=模拟故障5&icon=fault.png
+id=6&name=模拟故障6&icon=fault.png
+id=7&name=模拟故障7&icon=fault.png
+id=8&name=模拟故障8&icon=fault.png
+id=9&name=模拟故障9&icon=fault.png
+id=11&name=模拟故障22&icon=fault.png
+

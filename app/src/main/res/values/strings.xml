@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">启迪云控</string>
+    <string name="app_name_en">QDCloudControl</string>
+    <string name="title_activity_test">TestActivity</string>
+</resources>

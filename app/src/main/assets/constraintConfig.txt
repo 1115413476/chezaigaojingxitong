@@ -1,0 +1,17 @@
+{
+  "alertEvent":{
+    "distance":{
+      "roadSkid":150,
+      "roadConstruction":150,
+      "roadObstructions":150,
+      "busLanes":100
+    }
+  },
+  "signalLamp":{
+    "distance":200
+  },
+  "messageQueue":{
+    "timeout_queue":60,
+    "timeout_mesage":2
+  }
+}

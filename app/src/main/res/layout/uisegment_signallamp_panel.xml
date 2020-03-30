@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:parentTag="android.widget.FrameLayout">
+
+    <LinearLayout
+        android:id="@+id/ll_home_signalLampWrapper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginLeft="260dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:orientation="horizontal">
+      <!--//插入自己写的组件-->
+        <com.tusi.qdcloudcontrol.view.SignalLampView
+            android:id="@+id/slv_home_signalLamp1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.tusi.qdcloudcontrol.view.SignalLampView
+            android:id="@+id/slv_home_signalLamp2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp" />
+
+        <com.tusi.qdcloudcontrol.view.SignalLampView
+            android:id="@+id/slv_home_signalLamp3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp" />
+
+        <com.tusi.qdcloudcontrol.view.SignalLampView
+            android:id="@+id/slv_home_signalLamp4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp" />
+
+    </LinearLayout>
+
+
+</merge>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:parentTag="android.widget.FrameLayout">
+    <!--parentTag这个属性可以指定merge标签的布局类型-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/rg_mode_modes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/rb_mode_normal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/select_mode"
+                android:button="@null"
+                android:checked="true"
+                android:gravity="center"
+                android:paddingBottom="30dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="30dp"
+                android:text="普通"
+                android:textColor="@color/select_color"
+                android:textSize="@dimen/h2" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#cccccc" />
+
+            <RadioButton
+                android:id="@+id/rb_mode_simulation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/select_mode"
+                android:button="@null"
+                android:checked="false"
+                android:gravity="center"
+                android:paddingBottom="30dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="30dp"
+                android:text="仿真"
+                android:textColor="@color/select_color"
+                android:textSize="@dimen/h2" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#cccccc" />
+
+            <RadioButton
+                android:id="@+id/rb_mode_onlineCarHailing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/select_mode"
+                android:button="@null"
+                android:checked="false"
+                android:gravity="center"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingBottom="30dp"
+                android:paddingTop="30dp"
+                android:text="网约车"
+                android:textColor="@color/select_color"
+                android:textSize="@dimen/h2" />
+
+        </RadioGroup>
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/activity_vertical_margin">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/bg_home_compass" />
+
+            <ImageView
+                android:id="@+id/iv_mode_compass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_home_directionneedle" />
+        </FrameLayout>
+    </LinearLayout>
+
+</merge>

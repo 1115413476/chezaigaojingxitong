@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:layout_margin="20dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_debugInfo_tboxStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#44000000"
+                android:textSize="8sp"
+                tools:text="风刀霜剑发来的" />
+
+            <TextView
+                android:id="@+id/tv_debugInfo_cloudStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#44000000"
+                android:textSize="8sp"
+                tools:text="风刀霜剑发来的" />
+
+            <TextView
+                android:id="@+id/tv_debugInfo_currentVehicleId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#44000000"
+                android:textSize="8sp"
+                tools:text="风刀霜剑发来的" />
+
+            <TextView
+                android:id="@+id/tv_debugINfo_currentOrderId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#44000000"
+                android:textSize="8sp"
+                tools:text="风刀霜剑发来的" />
+
+            <TextView
+                android:id="@+id/tv_debugINfo_currentRoadId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#44000000"
+                android:textSize="8sp"
+                tools:text="风刀霜剑发来的" />
+
+            <TextView
+                android:id="@+id/tv_debugINfo_currentVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#44000000"
+                android:textSize="8sp"
+                tools:text="风刀霜剑发来的" />
+        </LinearLayout>
+    </FrameLayout>
+
+</merge>

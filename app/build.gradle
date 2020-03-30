@@ -1,0 +1,167 @@
+apply plugin: 'com.android.application'
+//apply plugin: 'me.tatarka.retrolambda'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    sourceSets.main.jni.srcDirs = [] // 禁用自动执行ndk-build //liux
+    defaultConfig {
+        applicationId "com.tusi.qdcloudcontrol"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                includeCompileClasspath = true
+            }
+        }
+        //liux
+        ndk {
+           //abiFilters "armeabi", "armeabi-v7a", "x86_64"
+           abiFilters "armeabi"
+        }
+
+        //liux
+        sourceSets.main.jni.srcDirs = [] // 禁用自动执行ndk-build //liux
+        task ndkBuild(type: Exec, description: 'Compile JNI source via NDK') {
+            commandLine "D:\\androidSDK\\ndk-bundle\\ndk-build.cmd",//配置ndk的路径
+                    'NDK_PROJECT_PATH=build/intermediates/ndk',//ndk默认的生成so的文件
+                    'NDK_LIBS_OUT=src/main/jniLibs',//配置的我们想要生成的so文件所在的位置
+                    'APP_BUILD_SCRIPT=src/main/jni/Android.mk',//指定项目以这个mk的方式
+                    'NDK_APPLOCATION_MK=src/main/jni/Application.mk'//指定项目以这个mk的方式
+        }
+    }
+
+//出现keystore不正确的问题，先删除keystore和对应配置项，运行程序
+    //def keystoreFilepath = ''
+   // def keystorePSW = ''
+  //  def keystoreAlias = ''
+  //  def keystoreAliasPSW = ''
+// default keystore file, PLZ config file path in local.properties
+   // def keyfile = file("./qdcloudcontrol.keystore")
+
+   // Properties properties = new Properties()
+// local.properties file in the root director
+  //  properties.load(project.rootProject.file('local.properties').newDataInputStream())
+  //  keystoreFilepath = properties.getProperty("keystore.path")
+ //   if (keystoreFilepath) {
+   //     keystorePSW = properties.getProperty("keystore.password")
+  //      keystoreAlias = properties.getProperty("keystore.alias")
+  //      keystoreAliasPSW = properties.getProperty("keystore.alias_password")
+ //       keyfile = file(keystoreFilepath)
+   // }
+
+
+   // signingConfigs {
+    //    release {
+    //        keyAlias 'an'
+   //         keyPassword 'android'
+   //         storeFile file('D:/pad/pad-master-f24d623d52cd140228100e6842654a146c86b2c7/app/qdcloudcontrol.keystore')
+    //        storePassword 'android'
+//            v1SigningEnabled true
+//            v2SigningEnabled true
+   //     }
+   // }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            zipAlignEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+          //  signingConfig signingConfigs.release
+            buildConfigField "String", "BUILD_TIME", "\"" + new Date().format("yyyy/MM/dd HH:mm:ss") + "\""
+            buildConfigField "String", "MQTT_HOST", MQTT_HOST_RELEASE
+            buildConfigField "String", "MQTT_HOST_1", MQTT_HOST_RELEASE_1
+        }
+        debug {
+            debuggable true
+            minifyEnabled true
+             zipAlignEnabled true
+            shrinkResources true
+            //解决keystorebug这么写
+          //  debuggable true
+           // minifyEnabled true
+           // zipAlignEnabled true
+          //  shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    //        signingConfig signingConfigs.release//keystore别名
+            buildConfigField "String", "BUILD_TIME", "\"" + new Date().format("yyyy/MM/dd HH:mm:ss") + "\""
+            buildConfigField "String", "MQTT_HOST", MQTT_HOST_DEBUG
+            buildConfigField "String", "MQTT_HOST_1", MQTT_HOST_DEBUG_1
+        }
+    }
+
+    sourceSets {  //liux
+        main {
+            jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
+            jniLibs.srcDir 'src/main/libs'
+        }
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+    }
+
+    lintOptions {
+        quiet true
+        checkReleaseBuilds false
+        abortOnError false
+        ignoreWarnings true
+        disable 'InvalidPackage'            //Some libraries have issues with this.
+        disable 'OldTargetApi'//Lint gives this warning but SDK 20 would be Android L Beta.
+        disable 'IconDensities'             //For testing purpose. This is safe to remove.
+        disable 'IconMissingDensityFolder'  //For testing purpose. This is safe to remove.
+    }
+    dexOptions {
+//        preDexLibraries = false
+//        //让它不要对Lib做preDexing
+//        incremental true
+        //开启incremental dexing,优化编译效率，这个功能android studio默认是关闭的。
+        javaMaxHeapSize "4g"     //增加java堆内存大小
+        jumboMode = true
+    }
+
+    aaptOptions {
+        cruncherEnabled false
+    }
+}
+
+
+
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    //    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    //    testImplementation 'junit:junit:4.12'
+    //    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    //    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
+    implementation 'com.blankj:utilcode:1.15.1'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.31'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.daimajia.androidanimations:library:2.3@aar'
+    implementation 'com.wang.avi:library:2.1.3'
+    implementation 'com.google.dagger:dagger:2.17'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:design:27.1.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.17'
+    implementation files('libs/Msc.jar')
+    implementation 'com.tencent.bugly:crashreport:latest.release'
+    //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.2.0
+    implementation 'com.tencent.bugly:nativecrashreport:latest.release'
+    //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
+}

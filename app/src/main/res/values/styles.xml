@@ -1,0 +1,64 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:screenOrientation">landscape</item>
+        <item name="android:configChanges">orientation|keyboardHidden</item>
+        <item name="android:launchMode">singleTop</item>
+        <item name="android:windowAnimationStyle">@style/activityAnimation</item>
+    </style>
+
+    <!-- Home Activity theme. -->
+    <style name="HomeActivityTheme" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:screenOrientation">landscape</item>
+        <item name="android:configChanges">orientation|keyboardHidden</item>
+    </style>
+
+    <!-- Splash Activity theme. -->
+    <style name="SplashActivityTheme" parent="AppTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@drawable/ic_splash_background</item>
+        <item name="android:configChanges">orientation|keyboardHidden</item>
+        <item name="android:screenOrientation">landscape</item>
+    </style>
+
+    <!-- animation 样式 -->
+    <style name="activityAnimation" parent="@android:style/Animation">
+        <item name="android:activityOpenEnterAnimation">@anim/side_right_in</item>
+        <item name="android:activityOpenExitAnimation">@anim/side_left_out</item>
+        <item name="android:activityCloseEnterAnimation">@anim/side_left_in</item>
+        <item name="android:activityCloseExitAnimation">@anim/side_right_out</item>
+    </style>
+
+
+    <style name="ShadownLayoutStyle">
+
+    </style>
+
+    <style name="BottomStyle">
+
+    </style>
+
+    <style name="TextStyle">
+
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+</resources>
