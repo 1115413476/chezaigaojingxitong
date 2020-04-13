@@ -76,7 +76,8 @@
                 android:paddingTop="30dp"
                 android:text="网约车"
                 android:textColor="@color/select_color"
-                android:textSize="@dimen/h2" />
+                android:textSize="@dimen/h2"
+                android:visibility="invisible"/>
 
         </RadioGroup>
 

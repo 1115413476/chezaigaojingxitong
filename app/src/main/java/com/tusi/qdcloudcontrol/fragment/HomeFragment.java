@@ -145,7 +145,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     @Inject
     MqttManager mMqttManager1;//192.168.1.99    mMqttManager1.getHost() 120.133.21.14:11883 （hostconfig中
 
-    @Named(Constants.CLIENT_2)
+    @Named(Constants.CLIENT_2)//同上主要处理上下车和起始点的信息
     @Inject
     MqttManager mMqttManager2;// 10.0.1.25
 
@@ -185,7 +185,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            Log.v("msg",msg.toString()+" 间隔 "+msg.what);
+            //Log.v("msg",msg.toString()+" 间隔 "+msg.what);//一秒2~3
             switch (msg.what) {
                 case WHAT_UPDATE_CAR_LOCATION://0，位置
                     isUpdateCarLocation = true;
@@ -254,11 +254,14 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     private void reConnect() {
         if (!mMqttManager1.isConnect()) {
             mMqttManager1.doConnect();
+            Log.v("msg","1重连" + mMqttManager1);//一直执行
         }
 
-        if (!mMqttManager2.isConnect()) {
-            mMqttManager2.doConnect();
-        }
+//        if (!mMqttManager2.isConnect()) {
+//            //先不连2,2和1一样的
+//        //    mMqttManager2.doConnect();
+//            Log.v("msg","2重连"+ mMqttManager2);//上面不执行则一直执行下面的
+//        }
     }
 
     @Nullable
@@ -489,10 +492,10 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 
 //        ArrayList<VehicleIdRes> vehicleIdRes = new ArrayList<>();
 //        VehicleIdRes e = new VehicleIdRes();
-//        e.setValue("93");
+//        e.setValue("100009");
 //        vehicleIdRes.add(e);
 //        onVehicleIdGeted(vehicleIdRes);
-
+//
 //        (121.22972254,31.33209647),(121.22346433,31.33010155)
 //          List<LatLng> parse = RoadLineData.parse(new LatLng(121.22972254, 31.33209647), new LatLng(121.22346433, 31.33010155));
 //         Log.d(TAG, "onCreate() called with: savedInstanceState = [" + parsxxe + "]");
@@ -505,10 +508,26 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         mPowerManager = ((PowerManager) getContext().getSystemService(Context.POWER_SERVICE));
         mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, getClass().getSimpleName());
 
-//        lastTimeCarLatLng = new CarLatLngRes();
-//        lastTimeCarLatLng.setLongitude(121.23564769);
-//        lastTimeCarLatLng.setLatitude(31.32361845);
-//        lastTimeCarLatLng.setDirection(0);
+         if(mVehicleId==null) {
+            tellMeVehicleId();//只链一次没有衔接topic成功，再次连接没有得到数据
+         }
+        CarLatLngRes eCarLatLng = new CarLatLngRes();
+        eCarLatLng.setLongitude(116.404);
+        eCarLatLng.setLatitude(39.945);
+        eCarLatLng.setDirection(0);
+      // onCarPostionChanged(eCarLatLng);
+        LatLng point1 = new LatLng(39.963175, 116.400244);
+//构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.drawable.ic_direction_arrow);
+//构建MarkerOption，用于在地图上添加Marker
+        OverlayOptions option = new MarkerOptions()
+                .position(point1)
+                .icon(bitmap);
+//在地图上添加Marker，并显示
+        mBaiduMap.addOverlay(option);
+
+
     }
 
     private void initSounndPool() {
@@ -613,6 +632,11 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         final ArrayList<VehicleIdReq> vehicleIdReqs = new ArrayList<>();
         vehicleIdReqs.add(new VehicleIdReq());
         publishContnet(Constants.CLIENT_1, Constants.SEND_TOPIC_VEHICLE_ID, mGson.toJson(vehicleIdReqs));
+//        subscribeTtopic(Constants.CLIENT_2, Constants.RECEIVE_TOPIC_VEHICLE_ID);
+//
+//        final ArrayList<VehicleIdReq> vehicleIdReqs = new ArrayList<>();
+//        vehicleIdReqs.add(new VehicleIdReq());
+//        publishContnet(Constants.CLIENT_2, Constants.SEND_TOPIC_VEHICLE_ID, mGson.toJson(vehicleIdReqs));
     }
 
     private void publishContnet(String clientType, String topic, String content) {
@@ -651,12 +675,16 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                 manager = mMqttManager1;
                 break;
         }
+//        Log.v("mqtt1","1已连接");
         if (manager.isConnect()) {
             manager.subscribe(topic, Constants.DEFAULT_MQTT_QOS);
+            Log.v("MqttManagermqtt1","已连接订阅topic"+ topic.toString());//no
         } else {
+            Log.v("MqttManagermqtt1","失去与服务器的链接topic"+ topic.toString()+"正在重连");//执行一次，失去与服务器的链接topictbox/reply/yktype正在重连
             manager.doConnect();
             if (!manager.isConnect()) {
                 ToastUtils.showShort(String.format("失去与服务器的链接topic:[%s]", topic));
+                Log.v("MqttManagermqtt1","失去与服务器的链接topic"+ topic.toString());//no
             }
         }
     }
@@ -713,18 +741,25 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMqttMessageReceive(MQMessageEvent message) {
         final MqttMessage data = message.getData();
-        final String jsonStr = new String(data.getPayload());
+        String jsonStr = new String(data.getPayload());
+       jsonStr=jsonStr.replaceAll(": ", ":").replace(" ", "").replace("，", ",");
+        Log.v("a1",message.getTopic());//no or always
         if (Constants.RECEIVE_TOPIC_VEHICLE_ID.equals(message.getTopic())) {
             //车机Id
-            final List<VehicleIdRes> vehicleIdRes = mGson.fromJson(jsonStr, new TypeToken<ArrayList<VehicleIdRes>>() {
-            }.getType());
+            Log.v("a1","mgson:"+jsonStr);
+           final VehicleIdRes vehicleIdRes = mGson.fromJson(jsonStr, VehicleIdRes.class);
+//            final ArrayList<VehicleIdRes> vehicleIdRes = mGson.fromJson(jsonStr, new TypeToken<ArrayList<VehicleIdRes>>() {
+//            }.getType());
+            Log.v("a1","vehicleIdRes:"+vehicleIdRes);
             onVehicleIdGeted(vehicleIdRes);
         } else if (Constants.RECEIVE_TOPIC_CAR_GPS.equals(message.getTopic())) {
             //车辆gps  121.22972254,31.33209647
+            Log.v("a2","mgson:"+jsonStr);
             final CarLatLngRes carLatLng = mGson.fromJson(jsonStr, CarLatLngRes.class);
             onCarPostionChanged(carLatLng);
         } else if (Constants.RECEIVE_TOPIC_ROAD_EXCEPITON.equals(message.getTopic())) {
             //道路施工 eventType:10  道路打滑eventType:6
+            Log.v("a3","mgson:"+jsonStr);
             try {
                 final int eventType = new org.json.JSONObject(jsonStr).optInt("eventType");
                 if (eventType == 10) {
@@ -741,6 +776,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             }
         } else if (Constants.RECEIVE_TOPIC_ROAD_BARRIERS.equals(message.getTopic())) {
             //路面障碍
+            Log.v("a4","mgson:"+jsonStr);
             final RoadBarriersRes roadBarriersRes = mGson.fromJson(jsonStr, RoadBarriersRes.class);
             onRoadBarriers(roadBarriersRes);
         } else if (Constants.RECEIVE_TOPIC_BUS_ROAD.equals(message.getTopic())) {
@@ -753,10 +789,12 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             onGangerousCarComming(gangerousCarRes);
         } else if (Constants.RECEIVE_TOPIC_SIGNALLAMP.equals(message.getTopic())) {
             //信号灯
+            Log.v("a5xinhaodeng","mgson:"+jsonStr);
             final SignalLampRes signalLampRes = mGson.fromJson(jsonStr, SignalLampRes.class);
             onSignalLampUpdate(signalLampRes);
         } else if (Constants.RECEIVE_START_DESTIONPOINT.equals(message.getTopic())) {
             //线路信息
+            Log.v("a6xianlu","mgson:"+jsonStr);
             final StartDestinationRes destinationRes = mGson.fromJson(jsonStr, StartDestinationRes.class);
             getDestinationRes(destinationRes);
         }
@@ -1015,17 +1053,28 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
      *
      * @param vehicleIdRes
      */
-    private void onVehicleIdGeted(List<VehicleIdRes> vehicleIdRes) {
-        if (vehicleIdRes != null && vehicleIdRes.size() > 0 && !TextUtils.isEmpty(vehicleIdRes.get(0).getValue())) {
-            final String vehicleId = vehicleIdRes.get(0).getValue();
-            Log.d(TAG, "onVehicleIdGeted() called with: vehicleIdRes = [" + vehicleId + "]");
+//   private void onVehicleIdGeted(List<VehicleIdRes> vehicleIdRes) {
+//        Log.v("vid", "条件不符合");
+//        if (vehicleIdRes != null && vehicleIdRes.size() > 0 && !TextUtils.isEmpty(vehicleIdRes.get(0).getValue())) {
+//            final String vehicleId = vehicleIdRes.get(0).getValue();
+//            Log.v("vid", "onVehicleIdGeted() called with: vehicleIdRes = [" + vehicleId + "]");
+//            HomeFragment.this.mVehicleId = vehicleId;
+//            fixTopic(vehicleId);
+//            subscribetTopics();
+//           //shortToast(String.format("VehicleId获取成功%s", mVehicleId));
+//        }
+//    }
+    private void onVehicleIdGeted(VehicleIdRes vehicleIdRes) {
+        Log.v("vid", "条件不符合");
+        if (vehicleIdRes != null  && !TextUtils.isEmpty(vehicleIdRes.getValue())) {
+            final String vehicleId = vehicleIdRes.getValue();
+            Log.v("vid", "onVehicleIdGeted() called with: vehicleIdRes = [" + vehicleId + "]");
             HomeFragment.this.mVehicleId = vehicleId;
             fixTopic(vehicleId);
             subscribetTopics();
-//            shortToast(String.format("VehicleId获取成功%s", mVehicleId));
+            //shortToast(String.format("VehicleId获取成功%s", mVehicleId));
         }
     }
-
 
     /**
      * 获取目的地信息
@@ -1179,11 +1228,11 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 
     //TODO 是否隐藏信号灯，下方注释为接受不到信号时隐藏信号灯
     private void hideSignalLampViews() {
-//        mSlvDown.setVisibility(View.INVISIBLE);
-//        mSlvLeft.setVisibility(View.INVISIBLE);
-//        mSlvTop.setVisibility(View.INVISIBLE);
-//        mSlvRight.setVisibility(View.INVISIBLE);
-//        mShowingSignalLampStartNodeId = "";
+        mSlvDown.setVisibility(View.INVISIBLE);
+        mSlvLeft.setVisibility(View.INVISIBLE);
+        mSlvTop.setVisibility(View.INVISIBLE);
+        mSlvRight.setVisibility(View.INVISIBLE);
+        mShowingSignalLampStartNodeId = "";
     }
 
     private void updateSignalLampStatus(SignalGpsMode signalGpsMode, SignalLampRes.EntrancesBean.ExitsBean exitsBean) {
@@ -1255,7 +1304,11 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
      * @param carLatLng
      */
     private void onCarPostionChanged(CarLatLngRes carLatLng) {
-        if (!isUpdateCarLocation) return;
+//        if (!isUpdateCarLocation) {
+//           Log.v("test","jieshu");
+//            return;
+//        }
+        Log.v("test","kasihi");
         double carLongtitude = carLatLng.getLongitude();
         double carLatutide = carLatLng.getLatitude();
         LatLng latLng = new LatLng(carLatutide, carLongtitude);
@@ -1691,8 +1744,11 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         mBaiduMap.setOnMapStatusChangeListener(mapStatusChangeListener);
         mBaiduMap.setMyLocationEnabled(true);
         final int color = Color.argb(0XFF, 0X61, 0XBB, 0XE7);
+        Log.v(TAG,"定义图像");
         mCarArrowBitmapDescrption = BitmapDescriptorFactory.fromResource(R.drawable.ic_direction_arrow);
-        final MyLocationConfiguration myLocationConfiguration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, mCarArrowBitmapDescrption, 100, color);
+        //mCarArrowBitmapDescrption = BitmapDescriptorFactory.fromResource(R.drawable.startpoint);
+        Log.v(TAG,"yi定义图像");
+        MyLocationConfiguration myLocationConfiguration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, mCarArrowBitmapDescrption, 100, color);
         mBaiduMap.setMyLocationConfiguration(myLocationConfiguration);
         mBaiduMap.setOnMapTouchListener((MotionEvent motionEvent) -> {
             switch (motionEvent.getAction()) {
@@ -1774,13 +1830,22 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //        mBaiduMap.setMyLocationData(myLocationData);
 //
 //
+        Log.v(TAG,"处理后的carLatLng："+carLatLng);
         final MarkerOptions markerOptions = new MarkerOptions().position(carLatLng).rotate(45).icon(mCarArrowBitmapDescrption);
+        //下面是测试代码
+//        BitmapDescriptor bitmap6 = BitmapDescriptorFactory
+//                .fromResource(R.drawable.ic_direction_arrow);
+
+//        final OverlayOptions markerOptions = new MarkerOptions()
+//                .position(carLatLng)
+//                .icon(bitmap6);
+        Log.v(TAG,"处理后的markerOptions："+markerOptions+",,"+markerOptions.toString());
         if (mCarOverlay != null) {
             mCarOverlay.remove();
             mCarOverlay = null;
         }
         mCarOverlay = mBaiduMap.addOverlay(markerOptions);
-
+      //  mBaiduMap.addOverlay(markerOptions);
 
         final Point point = mBaiduMap.getProjection().toScreenLocation(carLatLng);
         point.x -= SizeUtils.dp2px(0);
@@ -1804,13 +1869,21 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //        LatLng desLatLng = converter.convert();
 
 // 将GPS设备采集的原始GPS坐标转换成百度坐标
-        CoordinateConverter converter = new CoordinateConverter();
-        converter.from(CoordinateConverter.CoordType.GPS);
-// sourceLatLng待转换坐标
-        converter.coord(sourceLatLng);
+//        CoordinateConverter converter = new CoordinateConverter();
+//        converter.from(CoordinateConverter.CoordType.GPS);
+//// sourceLatLng待转换坐标
+//        converter.coord(sourceLatLng);
+//        LatLng desLatLng = converter.convert();
+//        return desLatLng;
+//百度地图文档2020/4/10
+        //初始化坐标转换工具类，指定源坐标类型和坐标数据
+// sourceLatLng待转换坐标,原始GPS坐标转换成百度坐标(两者差距在于百度重新包装，有略微的偏移
+        CoordinateConverter converter = new CoordinateConverter()
+                .from(CoordinateConverter.CoordType.GPS)
+                .coord(sourceLatLng);
+
+//desLatLng 转换后的坐标
         LatLng desLatLng = converter.convert();
         return desLatLng;
     }
-
-
 }

@@ -19,9 +19,9 @@ public class Constants {
     public static final String ENAME_WEI_XIAN_CHE_LIANG = "危险车辆";
     public static final String ENAME_ZHANG_AI_WU = "有障碍物";
     public static final String SPKEY_CLIENT_ID = "spKeyMqttClienntId";
-    public static String PASSWORD = "1234586";
+    public static String PASSWORD = null;
     public static String CLIENT_ID = "AndroidClient";
-    public static String USER_NAME = "admin";
+    public static String USER_NAME =null;// "admin";
 
     public static final int DEFAULT_MQTT_QOS = 2;
 

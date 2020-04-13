@@ -71,7 +71,7 @@ public class ApplicationModule {
         Log.d(TAG, "provideMqttManager1() called with: host = [" + host + "]");
         final boolean connect = mqttManager.creatConnect(host, Constants.USER_NAME, Constants.PASSWORD, clientId);
         if (connect) {
-            Log.d(TAG, "provideMqttManager1()连接成功");
+            Log.d(TAG, "provideMqttManager1()连接成功");//true
         } else {
             Log.d(TAG, "provideMqttManager1()连接失败");
         }
@@ -96,7 +96,7 @@ public class ApplicationModule {
         Log.d(TAG, "provideMqttManager2() called with: host = [" + host + "]");
         final boolean connect = mqttManager.creatConnect(host, Constants.USER_NAME, Constants.PASSWORD, clientId);
         if (connect) {
-            Log.d(TAG, "provideMqttManager2()连接成功");
+            Log.d(TAG, "provideMqttManager2()连接成功");//true
         } else {
             Log.d(TAG, "provideMqttManager2()连接失败");
         }

@@ -2,6 +2,7 @@ package com.tusi.qdcloudcontrol.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +38,7 @@ public class QDSupportMapFragment extends SupportMapFragment {
 //        YDMapUtils.setCustomMapStyle(getActivity());
         final View view = super.onCreateView(layoutInflater, viewGroup, bundle);
         final MapView mapView = getMapView();
+        Log.v("callback1","callback is "+callback);
         mapView.getMap().getUiSettings().setOverlookingGesturesEnabled(false);
         mapView.getMap().getUiSettings().setCompassEnabled(false);
         mapView.getMap().getUiSettings().setRotateGesturesEnabled(false);
@@ -44,6 +46,8 @@ public class QDSupportMapFragment extends SupportMapFragment {
         mapView.showZoomControls(false);
         mapView.getMap().setMapStatus(MapStatusUpdateFactory.zoomTo(mInitZoom));
         clearBaiduLogo(mapView);
+        Log.v("callback2","callback is "+callback);
+       // Log.v("callback","callback is "+callback);未执行
         if (callback != null) {
             this.callback.onMapViewCreateFinish(getMapView());
         }

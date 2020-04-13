@@ -105,6 +105,7 @@ public class MqttManager {
      * @return
      */
     public boolean doConnect() {
+        Log.d(TAG,"client"+client.toString());
         boolean flag = false;
         if (client != null) {
             try {
