@@ -101,7 +101,7 @@ android {
     sourceSets {  //liux
         main {
             jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
-            jniLibs.srcDir 'src/main/libs'
+            //jniLibs.srcDir 'src/main/libs'
         }
     }
 
@@ -164,4 +164,6 @@ dependencies {
     //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.2.0
     implementation 'com.tencent.bugly:nativecrashreport:latest.release'
     //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
+    implementation files('libs/BaiduLBS_Android.jar')
+    implementation files('libs/Sunflower.jar')
 }

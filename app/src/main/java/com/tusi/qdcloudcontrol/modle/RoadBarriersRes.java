@@ -98,7 +98,44 @@ public class RoadBarriersRes {
     public static class SizeBean {
     }
 
+    //修改成后端的
     public static class RoadBean {
+//        private double roadId;
+//        private String vender;
+//        private String startNode;
+//        private String endNode;
+//        private  boolean start2end;
+//        public double getroadId() {
+//            return roadId;
+//        }
+//        public void setroadId(double roadId){
+//            this.roadId=roadId;
+//        }
+//        public String getvender() {
+//            return vender;
+//        }
+//        public void setvender(String vender){
+//            this.vender=vender;
+//        }
+//        public String getstartNode() {
+//            return startNode;
+//        }
+//        public void setstartNode(String startNode){
+//            this.startNode=startNode;
+//        }
+//        public String getendNode() {
+//            return endNode;
+//        }
+//        public void setendNode(String endNode){
+//            this.endNode=endNode;
+//        }
+//        public boolean getstart2end() {
+//            return start2end;
+//        }
+//        public void setstart2end(boolean start2end){
+//            this.start2end=start2end;
+//        }
+
     }
 
     public static class PositionBean {

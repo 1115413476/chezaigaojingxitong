@@ -38,7 +38,7 @@ public class Constants {
     //下车
     public static final String SEND_TOPIC_OFFCAR = "/app/offCar/";
 
-    //获取起始点坐标
+    //获取起始点坐标 获取目的地信息
     public static String RECEIVE_START_DESTIONPOINT = "/app/%s/destion/";
     //推送行驶路径到后台
     public static final String SEND_MESSAGE_TOSERVER = "/app/route/";

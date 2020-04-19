@@ -106,9 +106,10 @@ public class ConstraintConfig {
     public static class SignalLampBean {
         /**
          * distance : 200
+         * TODO 先改成500看
          */
 
-        private int distance = 200;
+        private int distance = 500;
 
         public int getDistance() {
             return distance;

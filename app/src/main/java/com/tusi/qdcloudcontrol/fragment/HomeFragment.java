@@ -47,6 +47,16 @@ import com.baidu.mapapi.map.Overlay;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.route.BikingRouteResult;
+import com.baidu.mapapi.search.route.DrivingRoutePlanOption;
+import com.baidu.mapapi.search.route.DrivingRouteResult;
+import com.baidu.mapapi.search.route.IndoorRouteResult;
+import com.baidu.mapapi.search.route.MassTransitRouteResult;
+import com.baidu.mapapi.search.route.OnGetRoutePlanResultListener;
+import com.baidu.mapapi.search.route.PlanNode;
+import com.baidu.mapapi.search.route.RoutePlanSearch;
+import com.baidu.mapapi.search.route.TransitRouteResult;
+import com.baidu.mapapi.search.route.WalkingRouteResult;
 import com.baidu.mapapi.utils.CoordinateConverter;
 import com.baidu.mapapi.utils.DistanceUtil;
 import com.blankj.utilcode.util.AppUtils;
@@ -89,6 +99,7 @@ import com.tusi.qdcloudcontrol.inter.QDMapStatusChangeListener;
 import com.tusi.qdcloudcontrol.internal.di.components.DataComponent;
 import com.tusi.qdcloudcontrol.modle.event.SpeakComplateEvent;
 import com.tusi.qdcloudcontrol.net.MqttManager;
+import com.tusi.qdcloudcontrol.utils.overlayutils.DrivingRouteOverlay;
 import com.tusi.qdcloudcontrol.view.SignalLampView;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -108,11 +119,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
 /**
  * Created by linfeng on 2018/10/15  14:25
  * Email zhanglinfengdev@163.com
  * Function details...
+ * changed by qianjiyin on 2019
+ * Email qianjiyin@buaa.edu.cn
  * 主文件，绑定相关控件在第1274行
  * 信号灯隐藏hideSignalLampViews1174行
  * 1501行设置仿真配置
@@ -196,6 +208,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     break;
                 case WHAT_ALERT_MESSAGE_QUEUE://1，对列
                     if (messageQueue.size() > 0) {
+                        Log.v(TAG,"messageQueue.size() > 0");
                         mHandler.removeMessages(WHAT_ALERT_MESSAGE_QUEUE);
                         cleanTimeOutMessageandNullLoadInfor(messageQueue);
                         mLlAlertMessageRoot.setVisibility(View.INVISIBLE);//
@@ -205,6 +218,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                         });
                         //未播报 播报时间小于等于2秒 最高优先级的三个事件
                         if (messageQueue.size() >= 3) {
+                            Log.v(TAG,"messageQueue.size() > 3");
                             final AlertMessage temp3 = messageQueue.remove(0);
                             final AlertMessage temp2 = messageQueue.get(0);
                             final AlertMessage temp1 = messageQueue.get(1);
@@ -219,6 +233,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //                            messageQueue.add(temp1);
                             messageQueue.add(temp2);
                         } else if (messageQueue.size() >= 1) {
+                            Log.v(TAG,"messageQueue.size() > 1");
                             final AlertMessage temp1 = messageQueue.remove(0);
                             updateAlertMessagePanel(temp1, null, null);
                             messageQueue.add(temp1);
@@ -319,7 +334,10 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
      * @param messageQueue
      */
     private void cleanTimeOutMessageandNullLoadInfor(List<AlertMessage> messageQueue) {
-        final long timeMillis = System.currentTimeMillis();
+        //TODO 修改为当前时间
+        // final long timeMillis = System.currentTimeMillis();
+
+        final long timeMillis = 1540295822815L;
         final ArrayList<AlertMessage> timeOutMessage = new ArrayList<>();
         for (AlertMessage alertMessage : messageQueue) {
             final boolean isPlayed = alertMessage.isPlayed;
@@ -345,7 +363,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     //警告事件布局
     private void updateAlertMessagePanel(AlertMessage alertMessage_level1, AlertMessage remove_level2, AlertMessage message_level3) {
         mLlAlertMessageRoot.setVisibility(View.VISIBLE);
-        final long timeMillis = System.currentTimeMillis();
+        final long timeMillis = System.currentTimeMillis();//TODO 仿真修改为具体时间
         if (alertMessage_level1 != null) {
             final long l = timeMillis - alertMessage_level1.receiveTime;
             if (l <= 10 * 1000) {
@@ -487,7 +505,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         intMapFragment();//绑定map，布置map
         getComponent(DataComponent.class).inject(this);
 
-        EventBus.getDefault().register(this);
+        EventBus.getDefault().register(this);//在此页面注册
         tellMeVehicleId();
 
 //        ArrayList<VehicleIdRes> vehicleIdRes = new ArrayList<>();
@@ -509,23 +527,15 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, getClass().getSimpleName());
 
          if(mVehicleId==null) {
+             Log.v(TAG,"mVehicleId"+mVehicleId);
             tellMeVehicleId();//只链一次没有衔接topic成功，再次连接没有得到数据
          }
-        CarLatLngRes eCarLatLng = new CarLatLngRes();
-        eCarLatLng.setLongitude(116.404);
-        eCarLatLng.setLatitude(39.945);
-        eCarLatLng.setDirection(0);
-      // onCarPostionChanged(eCarLatLng);
-        LatLng point1 = new LatLng(39.963175, 116.400244);
-//构建Marker图标
-        BitmapDescriptor bitmap = BitmapDescriptorFactory
-                .fromResource(R.drawable.ic_direction_arrow);
-//构建MarkerOption，用于在地图上添加Marker
-        OverlayOptions option = new MarkerOptions()
-                .position(point1)
-                .icon(bitmap);
-//在地图上添加Marker，并显示
-        mBaiduMap.addOverlay(option);
+//下面方法报错是因为oncreat在箭头图像绑定之前
+//        CarLatLngRes eCarLatLng = new CarLatLngRes();
+//        eCarLatLng.setLongitude(116.404);
+//        eCarLatLng.setLatitude(39.945);
+//        eCarLatLng.setDirection(0);
+//      // onCarPostionChanged(eCarLatLng);
 
 
     }
@@ -558,12 +568,15 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                 1);// 回放速度，该值在0.5-2.0之间 1为正常速度
     }
 
-//用户按下home键
+//用户按下home键返回（creat时也会执行
     @Override
     public void onResume() {
         super.onResume();
         mWakeLock.acquire();
-        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(this.getClass().getSimpleName(), Context.MODE_PRIVATE);
+        //TODO test函数，设置一些默认数据和后端未写好的接口
+        // testAlert();
+        testAlert();
+        /*final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(this.getClass().getSimpleName(), Context.MODE_PRIVATE);
         final String string = sharedPreferences.getString(ROAD_LINE_KEY, "");
         if (!TextUtils.isEmpty(string)) {
             final ArrayList<LatLng> latLngs = new ArrayList<>();
@@ -575,7 +588,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     final LatLng latLng = new LatLng(jsonObject.optDouble("latitude"), jsonObject.optDouble("longitude"));
                     latLngs.add(latLng);
                 }
-                setupDrivingLine(latLngs);
+                //setupDrivingLine(latLngs);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -607,7 +620,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         if (TextUtils.isEmpty(this.mVehicleId)) {
             mVehicleId = vehicleId;
             mOrderId = orderId;
-        }
+        }*/
 
     }
 
@@ -696,7 +709,9 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         subscribeTtopic(Constants.CLIENT_1, Constants.RECEIVE_TOPIC_ROAD_BARRIERS);
         subscribeTtopic(Constants.CLIENT_1, Constants.RECEIVE_TOPIC_CAR_GPS);
         subscribeTtopic(Constants.CLIENT_1, Constants.RECEIVE_TOPIC_SIGNALLAMP);
-        subscribeTtopic(Constants.CLIENT_2, Constants.RECEIVE_START_DESTIONPOINT);
+        //subscribeTtopic(Constants.CLIENT_2, Constants.RECEIVE_START_DESTIONPOINT);
+        subscribeTtopic(Constants.CLIENT_1, Constants.RECEIVE_START_DESTIONPOINT);
+
     }
 
     private void intMapFragment() {
@@ -752,10 +767,19 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //            }.getType());
             Log.v("a1","vehicleIdRes:"+vehicleIdRes);
             onVehicleIdGeted(vehicleIdRes);
+
+//            Log.v(TAG,"isUpdateCarLocation:"+isUpdateCarLocation);
+////test车辆位置
+//       CarLatLngRes eCarLatLng = new CarLatLngRes();
+//       eCarLatLng.setLongitude(116.404);
+//       eCarLatLng.setLatitude(39.945);
+//       eCarLatLng.setDirection(0);
+//onCarPostionChanged(eCarLatLng);
         } else if (Constants.RECEIVE_TOPIC_CAR_GPS.equals(message.getTopic())) {
             //车辆gps  121.22972254,31.33209647
             Log.v("a2","mgson:"+jsonStr);
             final CarLatLngRes carLatLng = mGson.fromJson(jsonStr, CarLatLngRes.class);
+            //carLatLng.setDirection(180);//后端传的数据有问题，在这里调整
             onCarPostionChanged(carLatLng);
         } else if (Constants.RECEIVE_TOPIC_ROAD_EXCEPITON.equals(message.getTopic())) {
             //道路施工 eventType:10  道路打滑eventType:6
@@ -778,6 +802,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             //路面障碍
             Log.v("a4","mgson:"+jsonStr);
             final RoadBarriersRes roadBarriersRes = mGson.fromJson(jsonStr, RoadBarriersRes.class);
+           //  roadBarriersRes.getPosition().setLatitude(31.33575076);//修改传来数据
             onRoadBarriers(roadBarriersRes);
         } else if (Constants.RECEIVE_TOPIC_BUS_ROAD.equals(message.getTopic())) {
             //公交专用车道
@@ -897,7 +922,9 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
      * @param roadExceptionRes
      */
     private void onRoadBarriers(RoadBarriersRes roadExceptionRes) {
+        //当前接收到的车辆位置信息
         if (lastTimeCarLatLng == null) {
+            Log.v(TAG,"lastTimeCarLatLng == null");
             return;
         }
         for (AlertMessage alertMessage : AlertMessage.fromRowEntity(roadExceptionRes)) {
@@ -905,16 +932,20 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             final RoadInfoHistory roadInfoHistory = RoadInfoHistory.getRoadInfoHistory(carLatLng);
             LatLng eventLatLng = new LatLng(alertMessage.mLat, alertMessage.mLon);
             final RoadInfoHistory roadInfoHistory_Alert = RoadInfoHistory.getRoadInfoHistory(eventLatLng);
+            Log.v(TAG,carLatLng.toString());
+            Log.v(TAG, eventLatLng.toString());
             if (roadInfoHistory_Alert != null && roadInfoHistory != null) {
+                Log.v(TAG,"roadInfoHistory_Alert:"+roadInfoHistory_Alert.getRoadName()+" :"+roadInfoHistory.getRoadName());
                 //            if (true) {
-//                final boolean equalsRoadId = roadInfoHistory.getRoadName().equals(roadInfoHistory_Alert.getRoadName());
-                final boolean equalsNextRoadId = RoadLineData.getNextRoadIds(roadInfoHistory.getRoadName()).equalsIgnoreCase(roadInfoHistory_Alert.getRoadName());
+               final boolean equalsNextRoadId = roadInfoHistory.getRoadName().equals(roadInfoHistory_Alert.getRoadName());
+              //  final boolean equalsNextRoadId = RoadLineData.getNextRoadIds(roadInfoHistory.getRoadName()).equalsIgnoreCase(roadInfoHistory_Alert.getRoadName());
 //                final boolean distanceToTarget = alertMessage.getDistanceToTarget(lastTimeCarLatLng) <= 150;
                 final boolean distanceToTarget = alertMessage.getDistanceToTarget(lastTimeCarLatLng) <= mConstraintConfig.getAlertEvent().getDistance().getRoadObstructions();
                 boolean targetIsBefore = false;
                 if (equalsNextRoadId) {
                     targetIsBefore = true;
                 } else {
+                    Log.v(TAG,"equalsNextRoadId!=true");
                     targetIsBefore = RoadLineData.targetIsBefore(carLatLng, eventLatLng);
                 }
                 if (equalsNextRoadId || (targetIsBefore && distanceToTarget)) {
@@ -928,7 +959,9 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                         }
                         return;
                     } else {
-                        alertMessage.enqueueTime = System.currentTimeMillis();
+                        Log.v(TAG,"exists null走到时间了");
+                       // alertMessage.enqueueTime = System.currentTimeMillis();
+                        alertMessage.enqueueTime=1540295822815L;
                         messageQueue.add(alertMessage);
                     }
                 }
@@ -1065,7 +1098,6 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //        }
 //    }
     private void onVehicleIdGeted(VehicleIdRes vehicleIdRes) {
-        Log.v("vid", "条件不符合");
         if (vehicleIdRes != null  && !TextUtils.isEmpty(vehicleIdRes.getValue())) {
             final String vehicleId = vehicleIdRes.getValue();
             Log.v("vid", "onVehicleIdGeted() called with: vehicleIdRes = [" + vehicleId + "]");
@@ -1089,25 +1121,29 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             double startLat = destinationRes.getStartLat();
             double endLon = destinationRes.getEndLon();
             double endLat = destinationRes.getEndLat();
-            showStartMarker(startLat, startLon, R.drawable.startpoint);
-            showEndMarker(endLat, endLon, R.drawable.endpoint);
-
-            /*latlngs.*/
+          //  showStartMarker(startLat, startLon, R.drawable.startpoint);
+            //showEndMarker(endLat, endLon, R.drawable.endpoint);
+         //*latlngs.*//*
             List<LatLng> rawLatLngs = RoadLineData.findLineByBeginEndLatLng(new LatLng(destinationRes.getStartLat(), destinationRes.getStartLon()), new LatLng(destinationRes.getEndLat(), destinationRes.getEndLon()));
             final List<LatLng> baiduLatLngs = RoadLineData.convertToBaiduLatLons(rawLatLngs);
-            setupDrivingLine(baiduLatLngs);
+            //绘制线路
+            // setupDrivingLine(baiduLatLngs);
+            BaidusetupDrivingLine(startLat,startLon,endLat,endLon);
 
+             //存储 数据
             final SharedPreferences sharedPreferences = getActivity().getSharedPreferences(this.getClass().getSimpleName(), Context.MODE_PRIVATE);
             sharedPreferences.edit().putString(ROAD_LINE_KEY, mGson.toJson(baiduLatLngs)).apply();
             sharedPreferences.edit().putString(ROAD_LINE_START_KEY, mGson.toJson(new LatLng(startLat, startLon))).apply();
             sharedPreferences.edit().putString(ROAD_LINE_END_KEY, mGson.toJson(new LatLng(endLat, endLon))).apply();
             sharedPreferences.edit().putString(ROAD_LINE_CAR_ID_KEY, this.mVehicleId).apply();
             sharedPreferences.edit().putString(ROAD_LINE_ORDER_ID_KEY, this.mOrderId).apply();
-
+            //上报数据
             snedRouteLineDataToServer(rawLatLngs);
 
         }
     }
+
+
 
     private static String ROAD_LINE_KEY = "roadLines";
     private static String ROAD_LINE_START_KEY = "startRoadLines";
@@ -1148,29 +1184,38 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         lastReceiveSignalLampTime = System.currentTimeMillis();
         if (lastTimeCarLatLng != null) {
             //更具车辆经纬度查 roadInfo 不为空则查找成功
+            Log.v(TAG,"lastTimeCarLatLng != null");
             RoadInfoHistory carRoadInfoHistory = RoadInfoHistory.getRoadInfoHistory(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()));
 
             if (carRoadInfoHistory != null) {
+                Log.v(TAG,"carRoadInfoHistory != null");
                 //更具roadId查本地路灯的经纬度 不为空则查找成功
                 SignalGpsMode signalGpsMode = getSignalLampStartNodeId(carRoadInfoHistory.getRoadName());
                 if (signalGpsMode != null) {
+                    Log.v(TAG,"signalGpsMode != null");
                     final double distance = DistanceUtil.getDistance(convertLatLng(new LatLng(signalGpsMode.lat, signalGpsMode.lng)), convertLatLng(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude())));
-//                    final long l = System.currentTimeMillis() - signalLampRes.getTimestamp();
+                    Log.v(TAG,"distance:"+distance);//400mi
+//                     final long l = System.currentTimeMillis() - signalLampRes.getTimestamp();
 //                    Log.d("FenngGe", "onSignalLampUpdate:  " + l);
-//                    if (distance > 200) {
-                    if (distance > mConstraintConfig.getSignalLamp().getDistance()) {
+                   if (distance > 500) {
+ //                  if (distance > mConstraintConfig.getSignalLamp().getDistance()) {
+                        Log.v(TAG,"distance > mConstraintConfig.getSignalLamp().getDistance()");
                         hideSignalLampViews();
                         return;
                     }
                     for (SignalLampRes.EntrancesBean entrancesBean : signalLampRes.getEntrances()) {
                         final List<SignalLampRes.EntrancesBean.RoadBeanX.RoadBean> road = entrancesBean.getRoad().getRoad();
+                        Log.v(TAG,"road:"+road);
                         for (SignalLampRes.EntrancesBean.RoadBeanX.RoadBean roadBean : road) {
                             final String startNode = roadBean.getStartNode();
-                            if (startNode.equals(signalGpsMode.startNodeId)) {
-                                final String startNodeId = signalGpsMode.startNodeId;
-                                if (!startNodeId.equals(mShowingSignalLampStartNodeId)) {
+                            Log.v(TAG,"startNode:"+startNode+" "+"signalGpsMode.startNodeId:"+signalGpsMode.startNodeId);//startNode:3_1_1 signalGpsMode.startNodeId:1_9_5
+                        //a    if (startNode.equals(signalGpsMode.startNodeId)) {
+                                Log.v(TAG,"startNode.equals(signalGpsMode.startNodeId==true");
+                               final String startNodeId = signalGpsMode.startNodeId;
+                             /*b    if (!startNodeId.equals(mShowingSignalLampStartNodeId)) {
+                                    Log.v(TAG,"!startNodeId.equals(mShowingSignalLampStartNodeId");
                                     hideSignalLampViews();
-                                }
+                                }b*/
                                 mShowingSignalLampStartNodeId = startNodeId;
                                 final long timeMillis = System.currentTimeMillis();
                                 for (SignalLampRes.EntrancesBean.ExitsBean exitsBean : entrancesBean.getExits()) {
@@ -1178,7 +1223,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                                     updateSignalLampStatus(signalGpsMode, exitsBean);
                                 }
                                 return;
-                            }
+                          //a  }
                         }
                     }
                 } else {
@@ -1304,11 +1349,11 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
      * @param carLatLng
      */
     private void onCarPostionChanged(CarLatLngRes carLatLng) {
-//        if (!isUpdateCarLocation) {
-//           Log.v("test","jieshu");
-//            return;
-//        }
-        Log.v("test","kasihi");
+        if (!isUpdateCarLocation) {
+           Log.v(TAG,"DIDIAN jieshu");
+            return;
+        }
+        Log.v(TAG,"DIDIAN kasihi");
         double carLongtitude = carLatLng.getLongitude();
         double carLatutide = carLatLng.getLatitude();
         LatLng latLng = new LatLng(carLatutide, carLongtitude);
@@ -1742,13 +1787,31 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 
         mBaiduMap = mapView.getMap();
         mBaiduMap.setOnMapStatusChangeListener(mapStatusChangeListener);
-        mBaiduMap.setMyLocationEnabled(true);
+        mBaiduMap.setMyLocationEnabled(true);//开启定位图层
+        /*以下代码可行
+        LatLng point1 = new LatLng(39.963175, 116.400244);
+//构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.drawable.ic_direction_arrow);
+//构建MarkerOption，用于在地图上添加Marker
+
+        OverlayOptions option = new MarkerOptions()
+                .position(point1)
+                .icon(bitmap)
+                .draggable(true)
+//设置平贴地图，在地图中双指下拉查看效果
+                .flat(true)
+                .alpha(0.5f);
+//在地图上添加Marker，并显示
+        Log.v(TAG,"point1:"+point1+" "+"bitmap:"+bitmap.toString()+" "+"option:"+option.toString()+" ");
+        mBaiduMap.addOverlay(option);
+        */
         final int color = Color.argb(0XFF, 0X61, 0XBB, 0XE7);
         Log.v(TAG,"定义图像");
         mCarArrowBitmapDescrption = BitmapDescriptorFactory.fromResource(R.drawable.ic_direction_arrow);
         //mCarArrowBitmapDescrption = BitmapDescriptorFactory.fromResource(R.drawable.startpoint);
         Log.v(TAG,"yi定义图像");
-        MyLocationConfiguration myLocationConfiguration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, mCarArrowBitmapDescrption, 100, color);
+        MyLocationConfiguration myLocationConfiguration = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.FOLLOWING, true, mCarArrowBitmapDescrption,100, color);
         mBaiduMap.setMyLocationConfiguration(myLocationConfiguration);
         mBaiduMap.setOnMapTouchListener((MotionEvent motionEvent) -> {
             switch (motionEvent.getAction()) {
@@ -1776,7 +1839,8 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //构建MarkerOption，用于在地图上添加Marker
         OverlayOptions option = new MarkerOptions()
                 .position(point)
-                .icon(bitmap);
+                .icon(bitmap)
+                .alpha(0f);//起始点隐藏
 //在地图上添加Marker，并显示
         if (startOverlay != null) {
             startOverlay.remove();
@@ -1797,7 +1861,8 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //构建MarkerOption，用于在地图上添加Marker
         OverlayOptions option = new MarkerOptions()
                 .position(point)
-                .icon(bitmap);
+                .icon(bitmap)
+                .alpha(0.8f);
 //在地图上添加Marker，并显示
         if (endOverlay != null) {
             endOverlay.remove();
@@ -1807,13 +1872,86 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     }
 
     private void setupDrivingLine(List<LatLng> latLngs) {
+
+       /*采用绘制线的方法绘制点*/
         if (mOldOverline != null) {
             mOldOverline.remove();
         }
+        Log.v(TAG, "line路线绘制");
+       /*   //添加纹理
+        List<BitmapDescriptor> textureList = new ArrayList<>();
+        textureList.add(mRedTexture);
+        List<Integer> indexList = new ArrayList<>();
+        indexList.add(0);*/
         OverlayOptions ooPolyline = new PolylineOptions().width(15).color(Color.rgb(0X01, 0X9B, 0X4B)).points(latLngs);
         mOldOverline = mBaiduMap.addOverlay(ooPolyline);
-
         updateMapRotation();
+    }
+    //驾车luixna
+    private void BaidusetupDrivingLine(double startLat,double startLon,double endLat,double endLon){
+                         RoutePlanSearch mSearch = RoutePlanSearch.newInstance();
+                       Log.v(TAG, "路线");
+                       OnGetRoutePlanResultListener listener = new OnGetRoutePlanResultListener() {
+                           @Override
+                           public void onGetWalkingRouteResult(WalkingRouteResult walkingRouteResult) {
+
+                           }
+
+                           @Override
+                           public void onGetTransitRouteResult(TransitRouteResult transitRouteResult) {
+
+                           }
+
+                           @Override
+                           public void onGetMassTransitRouteResult(MassTransitRouteResult massTransitRouteResult) {
+
+                           }
+
+                           @Override
+                           public void onGetDrivingRouteResult(DrivingRouteResult drivingRouteResult) {
+                               if (drivingRouteResult == null ) {
+                                  Log.v(TAG, "抱歉，未找到结果");
+                               }
+                               //创建DrivingRouteOverlay实例
+                               DrivingRouteOverlay overlay = new DrivingRouteOverlay(mBaiduMap);
+                               if (drivingRouteResult.getRouteLines().size() > 0) {
+                                   Log.v(TAG, "路线size() > 0");
+                                   //获取路径规划数据,(以返回的第一条路线为例）
+                                   //为DrivingRouteOverlay实例设置数据
+                                   overlay.setData(drivingRouteResult.getRouteLines().get(0));
+                                   //在地图上绘制DrivingRouteOverlay
+                                   overlay.addToMap();
+                               }else{
+                                   Log.v(TAG, "路线size() = 0");
+                               }
+                           }
+
+                           @Override
+                           public void onGetIndoorRouteResult(IndoorRouteResult indoorRouteResult) {
+
+                           }
+
+                           @Override
+                           public void onGetBikingRouteResult(BikingRouteResult bikingRouteResult) {
+
+                           }
+                       };
+                       Log.v(TAG,"开始监听路线规划");
+                       mSearch.setOnGetRoutePlanResultListener(listener);
+
+                      // 定位当前位置后在进行路径规划
+                              LatLng startpoint = convertLatLng(new LatLng(startLat, startLon));
+                              LatLng endpoint = convertLatLng(new LatLng(endLat, endLon));
+                       PlanNode starNode = PlanNode.withLocation(startpoint);
+                       PlanNode endNode = PlanNode.withLocation(endpoint);
+
+                       mSearch.drivingSearch((new DrivingRoutePlanOption())
+                               .from(starNode)
+                               .to(endNode));
+
+                       //updateMapRotation();
+                       mSearch.destroy();
+
     }
 
     private void updateMapRotation() {
@@ -1825,7 +1963,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     }
 
     private void setupCarLocation(BaiduMap mBaiduMap, LatLng carLatLng) {
-        carLatLng = convertLatLng(carLatLng);
+        carLatLng = convertLatLng(carLatLng);//坐标转换
 //        final MyLocationData myLocationData = new MyLocationData.Builder().latitude(targetLatlng.latitude).longitude(targetLatlng.longitude).direction(-45).build();
 //        mBaiduMap.setMyLocationData(myLocationData);
 //
@@ -1847,17 +1985,27 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         mCarOverlay = mBaiduMap.addOverlay(markerOptions);
       //  mBaiduMap.addOverlay(markerOptions);
 
-        final Point point = mBaiduMap.getProjection().toScreenLocation(carLatLng);
-        point.x -= SizeUtils.dp2px(0);
-        point.y -= SizeUtils.dp2px(220);
-        final LatLng latLng = mBaiduMap.getProjection().fromScreenLocation(point);
-        final MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLng(latLng);
-        mBaiduMap.animateMapStatus(mapStatusUpdate);
-
-
-        updateMapRotation();
+        //改变地图中心点显示
+        LatLng cenpt = new LatLng(carLatLng.latitude,carLatLng.longitude);//设定中心点坐标
+ MapStatus mMapStatus = new MapStatus.Builder()//定义地图状态
+.target(cenpt)
+//.zoom(18.5f)
+.build();//定义MapStatusUpdate对象，以便描述地图状态将要发生的变化
+MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
+mBaiduMap.setMapStatus(mMapStatusUpdate);//改变地图状态
         final double direction = lastTimeCarLatLng.getDirection();
-        mIvCompass.setRotation((float) (180 - direction));
+    //   mIvCompass.setRotation((float) (180 - direction));//因为后端数据，指南针随地图改变
+
+//        final Point point = mBaiduMap.getProjection().toScreenLocation(carLatLng);
+//        point.x -= SizeUtils.dp2px(0);
+//        point.y -= SizeUtils.dp2px(220);
+//        final LatLng latLng = mBaiduMap.getProjection().fromScreenLocation(point);
+//        final MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLng(latLng);
+//        mBaiduMap.animateMapStatus(mapStatusUpdate);
+//      //  mBaiduMap.setMapStatus(mapStatusUpdate);
+//        updateMapRotation();
+//        final double direction = lastTimeCarLatLng.getDirection();
+//        mIvCompass.setRotation((float) (180 - direction));
     }
 
     private LatLng convertLatLng(LatLng sourceLatLng) {
@@ -1886,4 +2034,33 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         LatLng desLatLng = converter.convert();
         return desLatLng;
     }
+
+    //test函数
+    public void testAlert() {
+   /*     //carid
+        VehicleIdRes testvehicleIdRes =new VehicleIdRes();
+        testvehicleIdRes.setYktype("vid");
+        testvehicleIdRes.setValue("10008");
+        mVehicleId=testvehicleIdRes.getValue();
+//test车辆位置
+        isUpdateCarLocation=true;
+        CarLatLngRes eCarLatLng = new CarLatLngRes();
+        eCarLatLng.setLongitude(121.22972254);
+        eCarLatLng.setLatitude(31.33209647);
+        eCarLatLng.setDirection(90);
+        Log.v(TAG," onCarPostionChanged");
+        onCarPostionChanged(eCarLatLng);*/
+   // 线路信息
+        StartDestinationRes testdestinationRes = new StartDestinationRes();
+        testdestinationRes.setStartLat(31.33209647);
+        testdestinationRes.setStartLon(121.22972254);
+        testdestinationRes.setEndLat(31.33010155);
+        testdestinationRes.setEndLon(121.22346433);
+        testdestinationRes.setOrderId(6);
+        getDestinationRes(testdestinationRes);
+
+    }
 }
+
+
+

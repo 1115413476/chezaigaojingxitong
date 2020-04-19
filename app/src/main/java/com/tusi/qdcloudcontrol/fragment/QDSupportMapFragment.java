@@ -39,9 +39,10 @@ public class QDSupportMapFragment extends SupportMapFragment {
         final View view = super.onCreateView(layoutInflater, viewGroup, bundle);
         final MapView mapView = getMapView();
         Log.v("callback1","callback is "+callback);
-        mapView.getMap().getUiSettings().setOverlookingGesturesEnabled(false);
+        //地图缩放等手势设置
+        mapView.getMap().getUiSettings().setOverlookingGesturesEnabled(true);//俯视
         mapView.getMap().getUiSettings().setCompassEnabled(false);
-        mapView.getMap().getUiSettings().setRotateGesturesEnabled(false);
+        mapView.getMap().getUiSettings().setRotateGesturesEnabled(true);//地图旋转
         mapView.getMap().getUiSettings().setZoomGesturesEnabled(true);
         mapView.showZoomControls(false);
         mapView.getMap().setMapStatus(MapStatusUpdateFactory.zoomTo(mInitZoom));

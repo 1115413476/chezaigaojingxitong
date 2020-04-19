@@ -113,7 +113,7 @@ public class MqttManager {
                 Log.d(TAG, "Connected to " + client.getServerURI() + " with client ID " + client.getClientId());
                 flag = true;
             } catch (Exception e) {
-               // Log.d("112",e+" connect fail");//e:MqttException (0)一秒一次
+                Log.d("112",e+" connect fail");//e:MqttException (0)一秒一次
             }
         }
         return flag;
