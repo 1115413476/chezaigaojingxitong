@@ -79,6 +79,8 @@ public class MqttManager {
             conOpt = new MqttConnectOptions();
             conOpt.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
             conOpt.setCleanSession(clean);
+
+            //conOpt.setCleanSession(true);
             if (password != null) {
                 conOpt.setPassword(password.toCharArray());
             }
@@ -110,10 +112,10 @@ public class MqttManager {
         if (client != null) {
             try {
                 client.connect(conOpt);
-                Log.d(TAG, "Connected to " + client.getServerURI() + " with client ID " + client.getClientId());
+                Log.v(TAG, "Connected to " + client.getServerURI() + " with client ID " + client.getClientId());
                 flag = true;
             } catch (Exception e) {
-                Log.d("112",e+" connect fail");//e:MqttException (0)一秒一次
+                Log.d(TAG,e+" connect fail");//e:MqttException (0)一秒一次
             }
         }
         return flag;
@@ -186,12 +188,12 @@ public class MqttManager {
             // For instance if QoS 1 is specified, any messages originally published at QoS 2 will
             // be downgraded to 1 when delivering to the client but messages published at 1 and 0
             // will be received at the same level they were published at.
-            Log.d(TAG, "Subscribing to topic \"" + topicName + "\" qos " + qos);
+            Log.v(TAG, "Subscribing to topic \"" + topicName + "\" qos " + qos);
             try {
                 client.subscribe(topicName, qos);
                 flag = true;
             } catch (MqttException e) {
-
+                Log.v(TAG, "Subscribing error:" +e);
             }
         }
 

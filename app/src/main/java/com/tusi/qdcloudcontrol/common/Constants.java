@@ -18,10 +18,12 @@ public class Constants {
     public static final String ENAME_DONG_JIAO_CHE_DAO = "公交专用道";
     public static final String ENAME_WEI_XIAN_CHE_LIANG = "危险车辆";
     public static final String ENAME_ZHANG_AI_WU = "有障碍物";
+    //AndroidClient+时间戳连接
     public static final String SPKEY_CLIENT_ID = "spKeyMqttClienntId";
-    public static String PASSWORD = null;
+
+    public static String PASSWORD ="123456" ;
     public static String CLIENT_ID = "AndroidClient";
-    public static String USER_NAME =null;// "admin";
+    public static String USER_NAME ="admin";
 
     public static final int DEFAULT_MQTT_QOS = 2;
 
@@ -39,7 +41,8 @@ public class Constants {
     public static final String SEND_TOPIC_OFFCAR = "/app/offCar/";
 
     //获取起始点坐标 获取目的地信息
-    public static String RECEIVE_START_DESTIONPOINT = "/app/%s/destion/";
+    //public static String RECEIVE_START_DESTIONPOINT = "/app/%s/destion/";
+    public static String RECEIVE_START_DESTIONPOINT = "app/%s/destion";
     //推送行驶路径到后台
     public static final String SEND_MESSAGE_TOSERVER = "/app/route/";
 

@@ -24,6 +24,7 @@ public class MqttCallbackBus implements MqttCallback {
         Log.d(TAG, "connectionLost() called with: cause = [" + cause.getMessage() + "]");
     }
 
+    //  1.分发事件
     @Override
     public void messageArrived(String topic, MqttMessage message) {
         EventBus.getDefault().post(new MQMessageEvent(topic, message));

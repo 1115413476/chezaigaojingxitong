@@ -71,9 +71,9 @@ public class ApplicationModule {
         Log.d(TAG, "provideMqttManager1() called with: host = [" + host + "]");
         final boolean connect = mqttManager.creatConnect(host, Constants.USER_NAME, Constants.PASSWORD, clientId);
         if (connect) {
-            Log.d(TAG, "provideMqttManager1()连接成功");//true
+            Log.d(TAG, "provideMqttManager1()连接创建");//true
         } else {
-            Log.d(TAG, "provideMqttManager1()连接失败");
+            Log.d(TAG, "provideMqttManager1()连接创建失败");
         }
         return mqttManager;
     }
@@ -110,8 +110,10 @@ public class ApplicationModule {
         if (TextUtils.isEmpty(oldAndroidClient)) {
             final String androidCliennt = String.format("%s_%d", "AndroidClient", System.currentTimeMillis());
             sharedPreferences.edit().putString(Constants.SPKEY_CLIENT_ID, androidCliennt).commit();
+            Log.v(TAG,"AndroidClient"+ System.currentTimeMillis()+":新cid");
             return androidCliennt;
         } else {
+            Log.v(TAG,"AndroidClient"+ oldAndroidClient+":旧cid");
             return oldAndroidClient;
         }
     }
