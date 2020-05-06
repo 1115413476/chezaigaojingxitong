@@ -23,6 +23,7 @@ import javax.inject.Singleton;
 /**
  * Created by zhanglinfeng on 2018/10/31
  * Copyright 2016
+ * 使用科大讯飞TTS技术
  */
 @Singleton
 public class VoiceManager {

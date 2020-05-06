@@ -29,6 +29,7 @@ import dagger.Provides;
  * Created by linfeng on 2018/10/15  12:31
  * Email zhanglinfengdev@163.com
  * Function details...
+ * 连接mqtt
  */
 @Module
 public class ApplicationModule {

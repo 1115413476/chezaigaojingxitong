@@ -4,6 +4,7 @@ package com.tusi.qdcloudcontrol.modle;
  * Created by linfeng on 2018/10/30  12:39
  * Email zhanglinfengdev@163.com
  * Function details...
+ * 对于事件的一些限制条件，如时间等
  */
 public class ConstraintConfig {
 

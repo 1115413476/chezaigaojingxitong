@@ -339,7 +339,6 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
      * @param messageQueue
      */
     private void cleanTimeOutMessageandNullLoadInfor(List<AlertMessage> messageQueue) {
-        //TODO 修改为当前时间
         final long timeMillis = System.currentTimeMillis();
 
       // final long timeMillis = 1540295822815L;
@@ -374,7 +373,8 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         if (alertMessage_level1 != null) {
             final long l = timeMillis - alertMessage_level1.receiveTime;//事件时间差，当前系统时间-事件时间
             Log.v(TAG,"alertMessage_level1 != null");
-            if (l <= 10 * 1000) {
+            if (l <= 60 * 1000) {
+            //    if (l <= 10 * 1000) {     //10s内的
                 if (!alertMessage_level1.isPlayed) {
                     Log.v(TAG,"alertMessage_level1.isPlayed != null");
 //                    if (mLlAlertMessageTop1.getVisibility() == View.VISIBLE) {
@@ -977,10 +977,11 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                 Log.v(TAG,"roadInfoHistory_Alert:"+roadInfoHistory_Alert.getRoadName()+" :"+roadInfoHistory.getRoadName());
                 //            if (true) {
                final boolean equalsNextRoadId = roadInfoHistory.getRoadName().equals(roadInfoHistory_Alert.getRoadName());
-              //  final boolean equalsNextRoadId = RoadLineData.getNextRoadIds(roadInfoHistory.getRoadName()).equalsIgnoreCase(roadInfoHistory_Alert.getRoadName());
+             //   final boolean equalsNextRoadId =true;
+                //  final boolean equalsNextRoadId = RoadLineData.getNextRoadIds(roadInfoHistory.getRoadName()).equalsIgnoreCase(roadInfoHistory_Alert.getRoadName());
 //                final boolean distanceToTarget = alertMessage.getDistanceToTarget(lastTimeCarLatLng) <= 150;
                 final boolean distanceToTarget = alertMessage.getDistanceToTarget(lastTimeCarLatLng) <= mConstraintConfig.getAlertEvent().getDistance().getRoadObstructions();
-                boolean targetIsBefore = false;
+               boolean targetIsBefore = false;
                 if (equalsNextRoadId) {
                     targetIsBefore = true;
                 } else {
@@ -998,7 +999,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                         }
                         return;
                     } else {
-                        Log.v(TAG,"exists null走到时间了");
+                        Log.v(TAG,"exists null");
                       alertMessage.enqueueTime = System.currentTimeMillis();
                        // alertMessage.enqueueTime=1540295822815L;
                         messageQueue.add(alertMessage);
@@ -1255,7 +1256,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                             final String startNode = roadBean.getStartNode();
                             Log.v(TAG,"startNode:"+startNode+" "+"signalGpsMode.startNodeId:"+signalGpsMode.startNodeId);//startNode:3_1_1 signalGpsMode.startNodeId:1_9_5
                           // if (startNode.equals(signalGpsMode.startNodeId)) {
-                               if (signalGpsMode.startNodeId=="1_6_5") {
+                               if (signalGpsMode.startNodeId.equals("1_5_1")) {
 
                        //         Log.v(TAG,"startNode.equals(signalGpsMode.startNodeId==true");
                                final String startNodeId = signalGpsMode.startNodeId;
