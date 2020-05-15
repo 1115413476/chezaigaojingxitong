@@ -393,7 +393,13 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     playSound(alertMessage_level1.getSoundId());
 
                     if (!mTtsManager.isSpeaking()) {
-                        mHandler.postDelayed(() -> mTtsManager.startSpeaking(alertMessage_level1.getSpeakContent(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()))), 300);
+                        LatLng carLatLng = new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude());
+                        RoadInfoHistory roadInfoHistory = RoadInfoHistory.getRoadInfoHistory(carLatLng);
+                        if (roadInfoHistory != null) {
+                            mHandler.postDelayed(() -> mTtsManager.startSpeaking(alertMessage_level1.getSpeakContent(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()))), 300);
+                        }else{
+                            mHandler.postDelayed(() -> mTtsManager.startSpeaking(alertMessage_level1.getSpeakContentwithoutroad(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()))), 300);
+                        }
                     }
 //                    }, 200);
                 } else {
@@ -492,6 +498,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     private String mOrderId;
     private Overlay mOldOverline;
     private CarLatLngRes lastTimeCarLatLng;
+    private CarLatLngRes pastTimeCarLatLng;
     private BitmapDescriptor mCarArrowBitmapDescrption;
     private BitmapDescriptor mCarArrowBitmapDescrptionbig;
     private Overlay mCarOverlay;
@@ -806,7 +813,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             Log.v("a2","mgson:"+jsonStr);
             final CarLatLngRes carLatLng = mGson.fromJson(jsonStr, CarLatLngRes.class);
           //  carLatLng.setDirection(240);//后端传的数据有问题，在这里调整,拐点31.32707829，121.23321171
-            if(121.22949932<=carLatLng.getLongitude()&&carLatLng.getLongitude()<=121.23321171&&carLatLng.getLatitude()<=31.32707829){
+          /*  if(121.22949932<=carLatLng.getLongitude()&&carLatLng.getLongitude()<=121.23321171&&carLatLng.getLatitude()<=31.32707829){
                 carLatLng.setDirection(250);
             }
             else if(carLatLng.getLongitude()<121.22949932&&carLatLng.getLongitude()>=121.22656765){
@@ -817,7 +824,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             }
             else {
                 ;
-            }
+            }*/
 
             onCarPostionChanged(carLatLng);
         } else if (Constants.RECEIVE_TOPIC_ROAD_EXCEPITON.equals(message.getTopic())) {
@@ -1006,6 +1013,27 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     }
                 }
 
+            }
+            else{//如果没有本地存储道路信息，根据距离来判断，其他四个告警事件暂无此判断
+                if(pastTimeCarLatLng!=null) {
+                    LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
+                    if (DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < 200 && DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLatLng))) {
+                        final AlertMessage exists = isExists(alertMessage);
+                        if (exists != null) {
+                            if (!exists.isPlayed) {
+                                exists.receiveTime = System.currentTimeMillis();
+                            } else {
+                                //noThing
+                            }
+                            return;
+                        } else {
+                            Log.v(TAG,"exists null");
+                            alertMessage.enqueueTime = System.currentTimeMillis();
+                            // alertMessage.enqueueTime=1540295822815L;
+                            messageQueue.add(alertMessage);
+                        }
+                    }
+                }
             }
         }
     }
@@ -1256,6 +1284,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                             final String startNode = roadBean.getStartNode();
                             Log.v(TAG,"startNode:"+startNode+" "+"signalGpsMode.startNodeId:"+signalGpsMode.startNodeId);//startNode:3_1_1 signalGpsMode.startNodeId:1_9_5
                           // if (startNode.equals(signalGpsMode.startNodeId)) {
+                            //TODO 应当使用上方逻辑，但是后端3_1_1在本地无对应，使用下方逻辑，自己定点
                                if (signalGpsMode.startNodeId.equals("1_5_1")) {
 
                        //         Log.v(TAG,"startNode.equals(signalGpsMode.startNodeId==true");
@@ -1278,7 +1307,24 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     hideSignalLampViews();
                 }
             } else {
-                hideSignalLampViews();
+                //carRoadInfoHistory = null
+                //对应红绿灯坐标在signalGpsinfo中查询，3_1_1对应下面的经纬度
+                double distance1 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.788840799,116.515208944)), convertLatLng(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude())));
+                double distance2 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.788840799,116.515208944)), convertLatLng(new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude())));
+                Log.v("msg","carRoadInfoHistory = null"+distance1+"  "+ distance2 );
+                if(distance1<500&&distance1<distance2) {
+                    Log.v("msg","distance1<500&&distance1<distance2");
+                    for (SignalLampRes.EntrancesBean entrancesBean : signalLampRes.getEntrances()) {
+                            for (SignalLampRes.EntrancesBean.ExitsBean exitsBean : entrancesBean.getExits()) {
+//                                    exitsBean = offsetPhase(timeMillis - signalLampRes.getTimestamp(), exitsBean);
+                                SignalGpsMode signalGpsMode = null;
+                                updateSignalLampStatus(signalGpsMode, exitsBean);
+                            }
+                        }
+
+                }else {
+                    hideSignalLampViews();
+                }
             }
         } else {
             hideSignalLampViews();
@@ -1402,6 +1448,10 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
            Log.v(TAG,"GPS jieshu");
             return;
         }
+        if( this.lastTimeCarLatLng!=null){
+            this.pastTimeCarLatLng=this.lastTimeCarLatLng;
+        }
+
         Log.v(TAG,"GPS kasihi");
         double carLongtitude = carLatLng.getLongitude();
         double carLatutide = carLatLng.getLatitude();
@@ -2083,13 +2133,16 @@ mBaiduMap.setMapStatus(mMapStatusUpdate);//改变地图状态
 //百度地图文档2020/4/10
         //初始化坐标转换工具类，指定源坐标类型和坐标数据
 // sourceLatLng待转换坐标,原始GPS坐标转换成百度坐标(两者差距在于百度重新包装，有略微的偏移
+
         CoordinateConverter converter = new CoordinateConverter()
                 .from(CoordinateConverter.CoordType.GPS)
                 .coord(sourceLatLng);
 
 //desLatLng 转换后的坐标
         LatLng desLatLng = converter.convert();
-        return desLatLng;
+
+      return desLatLng;
+      //  return sourceLatLng;//此路是百度坐标
     }
 
     //test函数

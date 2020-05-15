@@ -325,4 +325,22 @@ public class AlertMessage {
         final LatLng targetPosition = new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude());
         return DistanceUtil.getDistance(convertLatLng(eventPosition), convertLatLng(targetPosition));
     }
+
+    public String getSpeakContentwithoutroad(LatLng carLatLng) {
+        StringBuilder direction = new StringBuilder();
+        switch (this.mEventName) {
+            case Constants.ENAME_DAO_LU_SHI_GSON:
+                return String.format("前方%d米%s施工，请注意避让", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
+            case Constants.ENAME_DAO_LU_DA_HUA:
+                return String.format("前方%d米%s打滑，请减速慢行", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
+            case Constants.ENAME_ZHANG_AI_WU:
+                return String.format("前方%d米%s有障碍物，请注意避让", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
+            case Constants.ENAME_DONG_JIAO_CHE_DAO:
+                return String.format("前方%d米%s变为公交专用道，请注意换道", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
+            case Constants.ENAME_WEI_XIAN_CHE_LIANG:
+                return String.format("前方%d米车辆有%s行为请注意避让", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
+            default:return "车联位置丢失";
+        }
+    }
+
 }
