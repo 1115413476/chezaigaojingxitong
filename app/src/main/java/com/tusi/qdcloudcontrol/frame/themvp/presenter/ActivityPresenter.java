@@ -32,7 +32,6 @@ import com.tusi.qdcloudcontrol.frame.themvp.view.IDelegate;
  */
 public abstract class ActivityPresenter<T extends IDelegate> extends AppCompatActivity {
     protected T viewDelegate;
-
     public ActivityPresenter() {
         try {
             viewDelegate = getDelegateClass().newInstance();
