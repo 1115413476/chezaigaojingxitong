@@ -6,6 +6,7 @@ import java.util.List;
  * Created by linfeng on 2018/10/17  18:51
  * Email zhanglinfengdev@163.com
  * Function details...
+ *
  */
 public class RoadBarriersReq {
 

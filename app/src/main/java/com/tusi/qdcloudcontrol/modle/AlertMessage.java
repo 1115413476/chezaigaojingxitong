@@ -338,7 +338,9 @@ public class AlertMessage {
             case Constants.ENAME_DONG_JIAO_CHE_DAO:
                 return String.format("前方%d米%s变为公交专用道，请注意换道", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
             case Constants.ENAME_WEI_XIAN_CHE_LIANG:
-                return String.format("前方%d米车辆有%s行为请注意避让", ((int) DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))), direction.toString());
+                direction.replace(0, direction.length(), "");
+                direction.append("前方");//如果没有道路id只播报前方数据
+                return getDrivingBehavior(direction.toString());
             default:return "车联位置丢失";
         }
     }

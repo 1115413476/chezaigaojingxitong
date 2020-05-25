@@ -211,6 +211,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     break;
                 case WHAT_ALERT_MESSAGE_QUEUE://1，对列
                     if (messageQueue.size() > 0) {
+
                         mHandler.removeMessages(WHAT_ALERT_MESSAGE_QUEUE);
                         cleanTimeOutMessageandNullLoadInfor(messageQueue);
                         mLlAlertMessageRoot.setVisibility(View.INVISIBLE);//
@@ -218,6 +219,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                             final int i = o2.level - o1.level;
                             return i == 0 ? ((int) (o1.receiveTime - o2.receiveTime)) : i;
                         });
+
                         //未播报 播报时间小于等于2秒 最高优先级的三个事件
                         if (messageQueue.size() >= 3) {
                             Log.v(TAG,"messageQueue.size() > 3");
@@ -229,6 +231,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
 //                            messageQueue.add(temp2);
                             messageQueue.add(temp3);
                         } else if (messageQueue.size() >= 2) {
+                            Log.v(TAG,"messageQueue.size() = 2");
                             final AlertMessage temp2 = messageQueue.remove(0);
                             final AlertMessage temp1 = messageQueue.get(0);
                             updateAlertMessagePanel(temp2, temp1, null);
@@ -351,11 +354,12 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             if (timeOut && (isPlayed || palyedTime)) {
                 timeOutMessage.add(alertMessage);
             }
-            if (alertMessage.mEventName.equals(Constants.ENAME_WEI_XIAN_CHE_LIANG)) {
+          /*  危险车辆 危险车辆位置一定要有
+          if (alertMessage.mEventName.equals(Constants.ENAME_WEI_XIAN_CHE_LIANG)) {
                 if ((RoadInfoHistory.getRoadInfoHistory(new LatLng(alertMessage.mLat, alertMessage.mLon)) == null) || (RoadInfoHistory.getRoadInfoHistory(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude())) == null)) {
                     timeOutMessage.add(alertMessage);
                 }
-            }
+            }*/
         }
         messageQueue.removeAll(timeOutMessage);
     }
@@ -372,7 +376,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         // final long timeMillis = 1540295822815L;
         if (alertMessage_level1 != null) {
             final long l = timeMillis - alertMessage_level1.receiveTime;//事件时间差，当前系统时间-事件时间
-            Log.v(TAG,"alertMessage_level1 != null");
+            Log.v(TAG,"alertMessage_level1 != null"+alertMessage_level1.mEventName);
             if (l <= 60 * 1000) {
             //    if (l <= 10 * 1000) {     //10s内的
                 if (!alertMessage_level1.isPlayed) {
@@ -787,7 +791,6 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
     //eventbus使用
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMqttMessageReceive(MQMessageEvent message) {
-        Log.v(TAG,"订阅topic线程");
         final MqttMessage data = message.getData();
         String jsonStr = new String(data.getPayload());
        jsonStr=jsonStr.replaceAll(": ", ":").replace(" ", "").replace("，", ",");
@@ -856,6 +859,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             onBusRoad(busRoadRes);
         } else if (Constants.RECEIVE_TOPIC_GANGEROUS_CAR.equals(message.getTopic())) {
             //危险车辆
+            Log.v("weixiancheliang","mgson:"+jsonStr);
             final GangerousCarRes gangerousCarRes = mGson.fromJson(jsonStr, GangerousCarRes.class);
             onGangerousCarComming(gangerousCarRes);
         } else if (Constants.RECEIVE_TOPIC_SIGNALLAMP.equals(message.getTopic())) {
@@ -883,8 +887,8 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
         for (AlertMessage alertMessage : AlertMessage.fromRowEntity(roadExceptionRes)) {
             LatLng carLatLng = new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude());
             final RoadInfoHistory roadInfoHistory = RoadInfoHistory.getRoadInfoHistory(carLatLng);
-            LatLng evetnLatLng = new LatLng(alertMessage.mLat, alertMessage.mLon);
-            final RoadInfoHistory roadInfoHistory_Alert = RoadInfoHistory.getRoadInfoHistory(evetnLatLng);
+            LatLng eventLatLng = new LatLng(alertMessage.mLat, alertMessage.mLon);
+            final RoadInfoHistory roadInfoHistory_Alert = RoadInfoHistory.getRoadInfoHistory(eventLatLng);
             if (roadInfoHistory != null && roadInfoHistory_Alert != null) {
 //            if (true) {
 //                final boolean isNearby = alertMessage.getDistanceToTarget(lastTimeCarLatLng) <= 150;
@@ -895,7 +899,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                 if (equalsNextRoadId) {
                     targetIsBefore = true;
                 } else {
-                    targetIsBefore = RoadLineData.targetIsBefore(carLatLng, evetnLatLng);
+                    targetIsBefore = RoadLineData.targetIsBefore(carLatLng, eventLatLng);
                 }
                 if (equalsNextRoadId || (targetIsBefore && isNearby)) {
 //                if (true) {
@@ -913,6 +917,26 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     }
                 }
 
+            }
+            else{//如果没有本地存储道路信息，根据距离来判断
+                if(pastTimeCarLatLng!=null) {
+                    LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
+                    if (DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < 200 && DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLatLng))) {
+                        final AlertMessage exists = isExists(alertMessage);
+                        if (exists != null) {
+                            if (!exists.isPlayed) {
+                                exists.receiveTime = System.currentTimeMillis();
+                            } else {
+                                //noThing
+                            }
+                            return;
+                        } else {
+                            alertMessage.enqueueTime = System.currentTimeMillis();
+                            // alertMessage.enqueueTime=1540295822815L;
+                            messageQueue.add(alertMessage);
+                        }
+                    }
+                }
             }
         }
     }
@@ -956,6 +980,26 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     } else {
                         alertMessage.enqueueTime = System.currentTimeMillis();
                         messageQueue.add(alertMessage);
+                    }
+                }
+            }
+            else{//如果没有本地存储道路信息，根据距离来判断
+                if(pastTimeCarLatLng!=null) {
+                    LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
+                    if (DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < 200 && DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLatLng))) {
+                        final AlertMessage exists = isExists(alertMessage);
+                        if (exists != null) {
+                            if (!exists.isPlayed) {
+                                exists.receiveTime = System.currentTimeMillis();
+                            } else {
+                                //noThing
+                            }
+                            return;
+                        } else {
+                            alertMessage.enqueueTime = System.currentTimeMillis();
+                            // alertMessage.enqueueTime=1540295822815L;
+                            messageQueue.add(alertMessage);
+                        }
                     }
                 }
             }
@@ -1014,7 +1058,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                 }
 
             }
-            else{//如果没有本地存储道路信息，根据距离来判断，其他四个告警事件暂无此判断
+            else{//如果没有本地存储道路信息，根据距离来判断
                 if(pastTimeCarLatLng!=null) {
                     LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
                     if (DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < 200 && DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLatLng))) {
@@ -1080,6 +1124,26 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                     }
                 }
             }
+            else{//如果没有本地存储道路信息，根据距离来判断
+                if(pastTimeCarLatLng!=null) {
+                    LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
+                    if (DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < mConstraintConfig.getAlertEvent().getDistance().getBusLanes() && DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(eventLatLng)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLatLng))) {
+                        final AlertMessage exists = isExists(alertMessage);
+                        if (exists != null) {
+                            if (!exists.isPlayed) {
+                                exists.receiveTime = System.currentTimeMillis();
+                            } else {
+                                //noThing
+                            }
+                            return;
+                        } else {
+                            alertMessage.enqueueTime = System.currentTimeMillis();
+                            // alertMessage.enqueueTime=1540295822815L;
+                            messageQueue.add(alertMessage);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1098,43 +1162,85 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             }
             final LatLng carLocation = new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude());
             final RoadInfoHistory roadInfoHistory = RoadInfoHistory.getRoadInfoHistory(carLocation);
-            if (roadInfoHistory == null) return;
-            final int roadLine = roadInfoHistory.getRoadLine(carLocation);
+//            if (roadInfoHistory == null) return;
+
             LatLng eventLocation = new LatLng(alertMessage.mLat, alertMessage.mLon);
             final RoadInfoHistory roadInfoHistory_Alert = RoadInfoHistory.getRoadInfoHistory(eventLocation);
-            if (roadInfoHistory_Alert == null) return;
-            final int roadLine1 = roadInfoHistory_Alert.getRoadLine(eventLocation);
-            if (roadLine == roadLine1) {
+//            if (roadInfoHistory_Alert == null) return;
+            if (roadInfoHistory_Alert != null && roadInfoHistory != null) {
+                final int roadLine = roadInfoHistory.getRoadLine(carLocation);
+                final int roadLine1 = roadInfoHistory_Alert.getRoadLine(eventLocation);
+                Log.v("weixianche","buweinull");
+                if (roadLine == roadLine1) {
 //            if (true) {
-                if (!TextUtils.isEmpty(alertMessage.extra)) {
-                    final String[] split = alertMessage.extra.split(",");
-                    for (String s : split) {
-                        try {//userSpeed <=2 超速请您向  userBreake <= 2急刹车倾向 userCutin<=2及切入倾向 userinfraction <= 2 非法驾驶
-                            final int i = Integer.parseInt(s.trim());
-                            if (i <= 2 && i >= 0) {
-                                final AlertMessage exists = isExists(alertMessage);
-                                if (exists != null) {
-                                    if (!exists.isPlayed) {
-                                        exists.receiveTime = System.currentTimeMillis();
-                                        exists.mLat = alertMessage.mLat;
-                                        exists.mLon = alertMessage.mLon;
+                    if (!TextUtils.isEmpty(alertMessage.extra)) {
+                        final String[] split = alertMessage.extra.split(",");
+                        for (String s : split) {
+                            try {//userSpeed <=2 超速请您向  userBreake <= 2急刹车倾向 userCutin<=2及切入倾向 userinfraction <= 2 非法驾驶
+                                final int i = Integer.parseInt(s.trim());
+                                if (i <= 2 && i >= 0) {
+                                    final AlertMessage exists = isExists(alertMessage);
+                                    if (exists != null) {
+                                        if (!exists.isPlayed) {
+                                            exists.receiveTime = System.currentTimeMillis();
+                                            exists.mLat = alertMessage.mLat;
+                                            exists.mLon = alertMessage.mLon;
+                                        } else {
+                                            //noThing
+                                        }
+                                        return;
                                     } else {
-                                        //noThing
+                                        alertMessage.enqueueTime = System.currentTimeMillis();
+                                        messageQueue.add(alertMessage);
                                     }
-                                    return;
-                                } else {
-                                    alertMessage.enqueueTime = System.currentTimeMillis();
-                                    messageQueue.add(alertMessage);
                                 }
-                            }
-                        } catch (Exception e) {
+                            } catch (Exception e) {
 
+                            }
+                        }
+                    }
+                    //相同车道
+                }
+            }
+            else{
+                LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
+                if (DistanceUtil.getDistance(convertLatLng(carLocation), convertLatLng(eventLocation)) < 30 && DistanceUtil.getDistance(convertLatLng(carLocation), convertLatLng(eventLocation)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLocation))) {
+                    Log.v("weixianche","危险车辆开始执行");
+                    if (!TextUtils.isEmpty(alertMessage.extra)) {
+                        final String[] split = alertMessage.extra.split(",");
+                        for (String s : split) {
+                            try {//userSpeed <=2 超速请您向  userBreake <= 2急刹车倾向 userCutin<=2及切入倾向 userinfraction <= 2 非法驾驶
+                                final int i = Integer.parseInt(s.trim());
+                                if (i <= 2 && i >= 0) {
+                                    final AlertMessage exists = isExists(alertMessage);
+                                    if (exists != null) {
+                                        Log.v("weixianche","exists != null"+alertMessage.mUniqueId);
+                                        if (!exists.isPlayed) {
+                                            Log.v("weixianche","!exists.isPlayed"+alertMessage.mUniqueId);
+                                            exists.receiveTime = System.currentTimeMillis();
+                                            exists.mLat = alertMessage.mLat;
+                                            exists.mLon = alertMessage.mLon;
+                                        } else {
+                                            Log.v("weixianche","exists.isPlayed"+alertMessage.mUniqueId);
+                                            //noThing
+                                        }
+                                        return;
+                                    } else {
+                                        Log.v("weixianche","exists = null"+alertMessage.mUniqueId);
+                                        alertMessage.enqueueTime = System.currentTimeMillis();
+                                        messageQueue.add(alertMessage);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Log.v("weixianche",e.toString());
+                            }
                         }
                     }
                 }
-                //相同车道
+
             }
         }
+
     }
 
     //返回message中和alertMessage一样的
@@ -1309,11 +1415,13 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             } else {
                 //carRoadInfoHistory = null
                 //对应红绿灯坐标在signalGpsinfo中查询，3_1_1对应下面的经纬度
-                double distance1 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.788840799,116.515208944)), convertLatLng(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude())));
-                double distance2 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.788840799,116.515208944)), convertLatLng(new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude())));
-                Log.v("msg","carRoadInfoHistory = null"+distance1+"  "+ distance2 );
-                if(distance1<500&&distance1<distance2) {
-                    Log.v("msg","distance1<500&&distance1<distance2");
+//                double distance1 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.788840799,116.515208944)), convertLatLng(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude())));
+//                double distance2 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.788840799,116.515208944)), convertLatLng(new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude())));
+                double distance1 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.7854586512,116.49132221)), convertLatLng(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude())));
+                double distance2 = DistanceUtil.getDistance(convertLatLng(new LatLng(39.7854586512,116.49132221)), convertLatLng(new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude())));
+             //   Log.v("msg","carRoadInfoHistory = null"+distance1+"  "+ distance2 );
+                if(distance1<=500&&distance1<=distance2) {
+           //         Log.v("msg","distance1<500&&distance1<distance2");
                     for (SignalLampRes.EntrancesBean entrancesBean : signalLampRes.getEntrances()) {
                             for (SignalLampRes.EntrancesBean.ExitsBean exitsBean : entrancesBean.getExits()) {
 //                                    exitsBean = offsetPhase(timeMillis - signalLampRes.getTimestamp(), exitsBean);
