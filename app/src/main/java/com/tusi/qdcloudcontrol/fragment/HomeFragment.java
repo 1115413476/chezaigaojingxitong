@@ -402,7 +402,12 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
                         if (roadInfoHistory != null) {
                             mHandler.postDelayed(() -> mTtsManager.startSpeaking(alertMessage_level1.getSpeakContent(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()))), 300);
                         }else{
+                            if(alertMessage_level1.mEventName=="危险车辆"){
+                                mHandler.postDelayed(() -> mTtsManager.startSpeaking(alertMessage_level1.getSpeakContentwithoutroadweixian(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()),new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude()))), 300);
+                            }
+                            else{
                             mHandler.postDelayed(() -> mTtsManager.startSpeaking(alertMessage_level1.getSpeakContentwithoutroad(new LatLng(lastTimeCarLatLng.getLatitude(), lastTimeCarLatLng.getLongitude()))), 300);
+                        }
                         }
                     }
 //                    }, 200);
@@ -1204,7 +1209,7 @@ public class HomeFragment extends BaseFragment implements QDSupportMapFragment.M
             }
             else{
                 LatLng pastcarLatLng = new LatLng(pastTimeCarLatLng.getLatitude(), pastTimeCarLatLng.getLongitude());
-                if (DistanceUtil.getDistance(convertLatLng(carLocation), convertLatLng(eventLocation)) < 30 && DistanceUtil.getDistance(convertLatLng(carLocation), convertLatLng(eventLocation)) < DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(eventLocation))) {
+                if (DistanceUtil.getDistance(convertLatLng(carLocation), convertLatLng(eventLocation)) < 30 ) {
                     Log.v("weixianche","危险车辆开始执行");
                     if (!TextUtils.isEmpty(alertMessage.extra)) {
                         final String[] split = alertMessage.extra.split(",");

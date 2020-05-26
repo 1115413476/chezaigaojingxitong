@@ -116,6 +116,7 @@ public class QDApplication extends Application {
             File dataFile = new File(getFilesDir(), Constants.DATA_BASE_INFO);
             boolean b = FileIOUtils.writeFileFromIS(dataFile, open);
         }
+        //RoadInfoHistory的第三个属性，从数据库读
         SQLiteDatabase sqLiteDatabase = SQLiteDatabase.openOrCreateDatabase(file, null);
         Cursor road_rect = sqLiteDatabase.query("road_rect", null, null, null, null, null, null);
         if (road_rect.moveToFirst()) {

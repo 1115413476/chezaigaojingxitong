@@ -344,5 +344,20 @@ public class AlertMessage {
             default:return "车联位置丢失";
         }
     }
+    public String getSpeakContentwithoutroadweixian(LatLng carLatLng,LatLng pastcarLatLng) {
+        StringBuilder direction = new StringBuilder();
+        switch (this.mEventName) {
+            case Constants.ENAME_WEI_XIAN_CHE_LIANG:
+                direction.replace(0, direction.length(), "");
+                if( DistanceUtil.getDistance(convertLatLng(carLatLng), convertLatLng(new LatLng(this.mLat, this.mLon))) <=DistanceUtil.getDistance(convertLatLng(pastcarLatLng), convertLatLng(new LatLng(this.mLat, this.mLon)))){
+                    direction.append("前方");//如果没有道路id只播报前方数据
+                }
+               else{
+                    direction.append("后方");
+                }
+                return getDrivingBehavior(direction.toString());
+            default:return "车联位置丢失";
+        }
+    }
 
 }
